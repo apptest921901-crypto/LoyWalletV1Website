@@ -36,7 +36,7 @@ export default function HomeScreen() {
   const loadMerchants = async () => {
     try {
       setLoading(true);
-      const data = await cardAPI.getMerchants(searchQuery || undefined, favoritesOnly);
+      const data = await cardAPI.getMerchantsGrouped(searchQuery || undefined, favoritesOnly);
       setMerchants(data);
     } catch (error) {
       console.error('Error loading merchants:', error);
