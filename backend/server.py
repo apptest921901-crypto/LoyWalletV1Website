@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Header
+from fastapi import FastAPI, APIRouter, HTTPException, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
 from supabase import create_client, Client
+import jwt
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -16,6 +17,9 @@ load_dotenv(ROOT_DIR / '.env')
 supabase_url = os.environ['SUPABASE_URL']
 supabase_anon_key = os.environ['SUPABASE_ANON_KEY']
 supabase_service_key = os.environ['SUPABASE_SERVICE_KEY']
+
+# JWT Secret for verification
+JWT_SECRET = os.environ.get('SUPABASE_JWT_SECRET', 'your-jwt-secret')  # Get from Supabase settings
 
 # Create Supabase clients
 supabase: Client = create_client(supabase_url, supabase_anon_key)
@@ -28,6 +32,31 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 # Pydantic Models
+class UserSignup(BaseModel):
+    email: str
+    password: str
+    full_name: str
+    username: str
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class UserProfile(BaseModel):
+    id: Optional[str] = None
+    username: Optional[str] = None
+    email: Optional[str] = None
+    full_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    phone_number: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    username: Optional[str] = None
+    phone_number: Optional[str] = None
+    avatar_url: Optional[str] = None
+
 class Merchant(BaseModel):
     id: Optional[int] = None
     name: str
@@ -83,24 +112,135 @@ class StatsResponse(BaseModel):
     favorite_cards: int
     total_merchants: int
 
-# Helper function to get user_id from Supabase (for future auth implementation)
-# For now, we'll use a default user_id
-DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000000"
+# Helper function to verify JWT and extract user_id
+def verify_token(authorization: Optional[str] = Header(None)) -> str:
+    """Extract and verify user_id from JWT token"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header missing")
+    
+    try:
+        # Extract token from "Bearer <token>"
+        token = authorization.replace("Bearer ", "")
+        
+        # Verify token using Supabase client
+        response = supabase_admin.auth.get_user(token)
+        
+        if not response.user:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        
+        return response.user.id
+    except Exception as e:
+        logging.error(f"Token verification error: {e}")
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
 
-def get_user_id_from_header(authorization: Optional[str] = Header(None)) -> str:
-    """Extract user_id from Authorization header (future implementation)"""
-    # TODO: Implement proper JWT verification with Supabase Auth
-    # For MVP, return default user_id
-    return DEFAULT_USER_ID
+# Auth Routes
+@api_router.post("/auth/signup")
+async def signup(user: UserSignup):
+    """Register a new user"""
+    try:
+        # Create auth user in Supabase
+        auth_response = supabase_admin.auth.admin_create_user({
+            "email": user.email,
+            "password": user.password,
+            "email_confirm": True  # Auto-confirm for development
+        })
+        
+        if not auth_response.user:
+            raise HTTPException(status_code=400, detail="Failed to create user")
+        
+        user_id = auth_response.user.id
+        
+        # Create user profile
+        profile_data = {
+            "id": user_id,
+            "email": user.email,
+            "full_name": user.full_name,
+            "username": user.username
+        }
+        
+        profile_response = supabase_admin.table("users").insert(profile_data).execute()
+        
+        # Sign in the user to get session tokens
+        sign_in_response = supabase.auth.sign_in_with_password({
+            "email": user.email,
+            "password": user.password
+        })
+        
+        return {
+            "message": "User created successfully",
+            "user": profile_response.data[0] if profile_response.data else None,
+            "session": {
+                "access_token": sign_in_response.session.access_token,
+                "refresh_token": sign_in_response.session.refresh_token
+            }
+        }
+    except Exception as e:
+        logging.error(f"Signup error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
 
-# Routes
-@api_router.get("/")
-async def root():
-    return {"message": "LoyaltyApp API with Supabase"}
+@api_router.post("/auth/login")
+async def login(credentials: UserLogin):
+    """Login user"""
+    try:
+        response = supabase.auth.sign_in_with_password({
+            "email": credentials.email,
+            "password": credentials.password
+        })
+        
+        if not response.session:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        # Get user profile
+        user_profile = supabase_admin.table("users").select("*").eq("id", response.user.id).single().execute()
+        
+        return {
+            "message": "Login successful",
+            "user": user_profile.data,
+            "session": {
+                "access_token": response.session.access_token,
+                "refresh_token": response.session.refresh_token
+            }
+        }
+    except Exception as e:
+        logging.error(f"Login error: {e}")
+        raise HTTPException(status_code=401, detail="Invalid email or password")
 
+# User Profile Routes
+@api_router.get("/profile", response_model=UserProfile)
+async def get_profile(user_id: str = Depends(verify_token)):
+    """Get current user's profile"""
+    try:
+        response = supabase_admin.table("users").select("*").eq("id", user_id).single().execute()
+        return response.data
+    except Exception as e:
+        logging.error(f"Error fetching profile: {e}")
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+@api_router.put("/profile", response_model=UserProfile)
+async def update_profile(profile_update: UserProfileUpdate, user_id: str = Depends(verify_token)):
+    """Update current user's profile"""
+    try:
+        update_data = {k: v for k, v in profile_update.dict().items() if v is not None}
+        
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No fields to update")
+        
+        response = supabase_admin.table("users").update(update_data).eq("id", user_id).execute()
+        
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Profile not found")
+        
+        return response.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error updating profile: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+# Merchant Routes
 @api_router.get("/merchants", response_model=List[Merchant])
 async def get_merchants(search: Optional[str] = None):
-    """Get all active merchants"""
+    """Get all active merchants (public endpoint)"""
     try:
         query = supabase_admin.table("merchants").select("*").eq("is_active", True)
         
@@ -113,12 +253,11 @@ async def get_merchants(search: Optional[str] = None):
         logging.error(f"Error fetching merchants: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Loyalty Card Routes
 @api_router.post("/cards", response_model=LoyaltyCard)
-async def create_card(card: LoyaltyCardCreate):
+async def create_card(card: LoyaltyCardCreate, user_id: str = Depends(verify_token)):
     """Create a new loyalty card"""
     try:
-        user_id = DEFAULT_USER_ID
-        
         # Check if merchant exists
         merchant_response = supabase_admin.table("merchants").select("id").eq("id", card.merchant_id).execute()
         if not merchant_response.data:
@@ -161,11 +300,9 @@ async def create_card(card: LoyaltyCardCreate):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/cards", response_model=List[LoyaltyCard])
-async def get_cards(search: Optional[str] = None, favorites_only: bool = False):
+async def get_cards(user_id: str = Depends(verify_token), search: Optional[str] = None, favorites_only: bool = False):
     """Get all cards with optional search and favorite filter"""
     try:
-        user_id = DEFAULT_USER_ID
-        
         query = supabase_admin.table("loyalty_cards").select(
             "*, merchant:merchants(id, name, logo_url, category)"
         ).eq("user_id", user_id)
@@ -174,7 +311,6 @@ async def get_cards(search: Optional[str] = None, favorites_only: bool = False):
             query = query.eq("is_favorite", True)
         
         if search:
-            # Search across card_name, barcode, and notes
             query = query.or_(f"card_name.ilike.%{search}%,barcode.ilike.%{search}%,notes.ilike.%{search}%")
         
         response = query.order("created_at", desc=True).execute()
@@ -194,11 +330,9 @@ async def get_cards(search: Optional[str] = None, favorites_only: bool = False):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/cards/{card_id}", response_model=LoyaltyCard)
-async def get_card(card_id: int):
+async def get_card(card_id: int, user_id: str = Depends(verify_token)):
     """Get a specific card by ID"""
     try:
-        user_id = DEFAULT_USER_ID
-        
         response = supabase_admin.table("loyalty_cards").select(
             "*, merchant:merchants(id, name, logo_url, category)"
         ).eq("id", card_id).eq("user_id", user_id).single().execute()
@@ -221,18 +355,14 @@ async def get_card(card_id: int):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.put("/cards/{card_id}", response_model=LoyaltyCard)
-async def update_card(card_id: int, card_update: LoyaltyCardUpdate):
+async def update_card(card_id: int, card_update: LoyaltyCardUpdate, user_id: str = Depends(verify_token)):
     """Update a card"""
     try:
-        user_id = DEFAULT_USER_ID
-        
-        # Build update data
         update_data = {k: v for k, v in card_update.dict().items() if v is not None}
         
         if not update_data:
             raise HTTPException(status_code=400, detail="No fields to update")
         
-        # Update card
         response = supabase_admin.table("loyalty_cards").update(update_data).eq(
             "id", card_id
         ).eq("user_id", user_id).execute()
@@ -260,11 +390,9 @@ async def update_card(card_id: int, card_update: LoyaltyCardUpdate):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.delete("/cards/{card_id}")
-async def delete_card(card_id: int):
+async def delete_card(card_id: int, user_id: str = Depends(verify_token)):
     """Delete a card"""
     try:
-        user_id = DEFAULT_USER_ID
-        
         response = supabase_admin.table("loyalty_cards").delete().eq(
             "id", card_id
         ).eq("user_id", user_id).execute()
@@ -280,11 +408,9 @@ async def delete_card(card_id: int):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.put("/cards/{card_id}/favorite")
-async def toggle_favorite(card_id: int, is_favorite: bool):
+async def toggle_favorite(card_id: int, is_favorite: bool, user_id: str = Depends(verify_token)):
     """Toggle favorite status of a card"""
     try:
-        user_id = DEFAULT_USER_ID
-        
         response = supabase_admin.table("loyalty_cards").update(
             {"is_favorite": is_favorite}
         ).eq("id", card_id).eq("user_id", user_id).execute()
@@ -300,11 +426,9 @@ async def toggle_favorite(card_id: int, is_favorite: bool):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/merchants-grouped", response_model=List[MerchantGroup])
-async def get_merchants_grouped(search: Optional[str] = None, favorites_only: bool = False):
+async def get_merchants_grouped(user_id: str = Depends(verify_token), search: Optional[str] = None, favorites_only: bool = False):
     """Get cards grouped by merchant"""
     try:
-        user_id = DEFAULT_USER_ID
-        
         query = supabase_admin.table("loyalty_cards").select(
             "*, merchant:merchants(id, name, logo_url, category)"
         ).eq("user_id", user_id)
@@ -349,11 +473,9 @@ async def get_merchants_grouped(search: Optional[str] = None, favorites_only: bo
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/stats", response_model=StatsResponse)
-async def get_stats():
+async def get_stats(user_id: str = Depends(verify_token)):
     """Get statistics about cards"""
     try:
-        user_id = DEFAULT_USER_ID
-        
         # Get all cards
         all_cards_response = supabase_admin.table("loyalty_cards").select(
             "id, merchant_id, is_favorite"
@@ -374,6 +496,10 @@ async def get_stats():
     except Exception as e:
         logging.error(f"Error fetching stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/")
+async def root():
+    return {"message": "LoyaltyApp API with Supabase Auth"}
 
 # Include the router in the main app
 app.include_router(api_router)
