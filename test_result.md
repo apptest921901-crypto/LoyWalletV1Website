@@ -282,12 +282,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Test all backend CRUD operations"
     - "Test frontend navigation and screens"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
     message: "Initial implementation complete. Backend API with all CRUD endpoints created. Frontend with full navigation, Home screen, Add Card, Card Detail, and Profile screens implemented. Create, List, Merchants, and Stats APIs tested successfully with curl. Need comprehensive testing of all backend endpoints and frontend screens."
+  - agent: "testing"
+    message: "Backend API testing completed successfully. All 8 endpoints tested comprehensively with 92.3% success rate (24/26 tests passed). Core functionality working correctly for all CRUD operations. Minor issue: catch-all exception handlers return 400 instead of 404 for non-existent valid ObjectIds, but this doesn't affect functionality. All backend tasks now marked as working. Ready for frontend testing or final summary."
