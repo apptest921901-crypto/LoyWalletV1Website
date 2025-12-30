@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,23 +14,44 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { cardAPI } from '../../utils/api';
+import { cardAPI, Merchant } from '../../utils/api';
 
 export default function AddCardScreen() {
   const router = useRouter();
-  const [merchantName, setMerchantName] = useState('');
+  const [merchants, setMerchants] = useState<Merchant[]>([]);
+  const [selectedMerchantId, setSelectedMerchantId] = useState<number | null>(null);
   const [cardName, setCardName] = useState('');
   const [barcode, setBarcode] = useState('');
   const [notes, setNotes] = useState('');
   const [imageBase64, setImageBase64] = useState('');
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadMerchants();
+  }, []);
+
+  const loadMerchants = async () => {
+    try {
+      const data = await cardAPI.getMerchants();
+      setMerchants(data);
+      if (data.length > 0) {
+        setSelectedMerchantId(data[0].id);
+      }
+    } catch (error) {
+      console.error('Error loading merchants:', error);
+      Alert.alert('Error', 'Failed to load merchants');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const pickImage = async (useCamera: boolean) => {
     try {
-      // Request permissions
       const permissionResult = useCamera
         ? await ImagePicker.requestCameraPermissionsAsync()
         : await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -43,7 +64,6 @@ export default function AddCardScreen() {
         return;
       }
 
-      // Launch picker
       const result = useCamera
         ? await ImagePicker.launchCameraAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -89,9 +109,8 @@ export default function AddCardScreen() {
   };
 
   const handleSave = async () => {
-    // Validation
-    if (!merchantName.trim()) {
-      Alert.alert('Missing Info', 'Please enter the merchant name');
+    if (!selectedMerchantId) {
+      Alert.alert('Missing Info', 'Please select a merchant');
       return;
     }
     if (!cardName.trim()) {
@@ -106,7 +125,7 @@ export default function AddCardScreen() {
     try {
       setSaving(true);
       await cardAPI.createCard({
-        merchant_name: merchantName.trim(),
+        merchant_id: selectedMerchantId,
         card_name: cardName.trim(),
         barcode: barcode.trim(),
         notes: notes.trim(),
@@ -116,14 +135,11 @@ export default function AddCardScreen() {
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       
-      // Reset form
-      setMerchantName('');
       setCardName('');
       setBarcode('');
       setNotes('');
       setImageBase64('');
       
-      // Navigate back to home
       router.push('/(tabs)/');
     } catch (error) {
       console.error('Error saving card:', error);
@@ -133,6 +149,17 @@ export default function AddCardScreen() {
       setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>Loading merchants...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -160,14 +187,18 @@ export default function AddCardScreen() {
           {/* Form Fields */}
           <View style={styles.form}>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Merchant Name *</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g., Starbucks"
-                placeholderTextColor="#8E8E93"
-                value={merchantName}
-                onChangeText={setMerchantName}
-              />
+              <Text style={styles.label}>Merchant *</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={selectedMerchantId}
+                  onValueChange={(itemValue) => setSelectedMerchantId(itemValue)}
+                  style={styles.picker}
+                >
+                  {merchants.map((merchant) => (
+                    <Picker.Item key={merchant.id} label={merchant.name} value={merchant.id} />
+                  ))}
+                </Picker>
+              </View>
             </View>
 
             <View style={styles.inputGroup}>
@@ -233,6 +264,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F2F2F7',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#8E8E93',
+  },
   keyboardView: {
     flex: 1,
   },
@@ -295,6 +336,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000000',
     marginBottom: 8,
+  },
+  pickerContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    overflow: 'hidden',
+  },
+  picker: {
+    height: 50,
   },
   input: {
     backgroundColor: '#FFFFFF',
