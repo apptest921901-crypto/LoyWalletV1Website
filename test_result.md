@@ -146,39 +146,48 @@ backend:
   
   - task: "Update Card API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "PUT /api/cards/{id} endpoint implemented with partial updates, needs testing"
+      - working: true
+        agent: "testing"
+        comment: "PUT /api/cards/{id} tested successfully. Supports partial updates of single and multiple fields. Properly validates card existence and handles invalid IDs. All update operations working correctly."
   
   - task: "Delete Card API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "DELETE /api/cards/{id} endpoint implemented, needs testing"
+      - working: true
+        agent: "testing"
+        comment: "DELETE /api/cards/{id} tested successfully. Properly deletes existing cards and handles invalid IDs. Minor: Non-existent valid ObjectIds return 400 instead of 404 due to catch-all exception handler, but core functionality works correctly."
   
   - task: "Toggle Favorite API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "PUT /api/cards/{id}/favorite endpoint implemented, needs testing"
+      - working: true
+        agent: "testing"
+        comment: "PUT /api/cards/{id}/favorite tested successfully. Correctly toggles favorite status (true/false), validates card existence, and handles invalid IDs. All favorite operations working correctly."
   
   - task: "Get Merchants Grouped API"
     implemented: true
