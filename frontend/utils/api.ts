@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { supabase } from '../config/supabase';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -9,19 +10,47 @@ const api = axios.create({
   },
 });
 
+// Add interceptor to include auth token
+api.interceptors.request.use(
+  async (config) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      config.headers.Authorization = `Bearer ${session.access_token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export interface Card {
   id?: string;
-  merchant_name: string;
+  merchant_id: number;
+  merchant_name?: string;
   card_name: string;
   barcode: string;
   notes?: string;
   image_base64?: string;
   is_favorite: boolean;
+  merchant_logo_url?: string;
+  merchant_category?: string;
   created_at?: string;
+}
+
+export interface Merchant {
+  id: number;
+  name: string;
+  description?: string;
+  logo_url?: string;
+  category?: string;
+  website?: string;
 }
 
 export interface MerchantGroup {
   merchant_name: string;
+  merchant_id: number;
+  merchant_logo_url?: string;
   card_count: number;
   cards: Card[];
 }
@@ -74,9 +103,17 @@ export const cardAPI = {
   },
 
   // Get merchants grouped
-  getMerchants: async (search?: string, favoritesOnly?: boolean) => {
-    const response = await api.get<MerchantGroup[]>('/merchants', {
+  getMerchantsGrouped: async (search?: string, favoritesOnly?: boolean) => {
+    const response = await api.get<MerchantGroup[]>('/merchants-grouped', {
       params: { search, favorites_only: favoritesOnly },
+    });
+    return response.data;
+  },
+
+  // Get merchants list
+  getMerchants: async (search?: string) => {
+    const response = await api.get<Merchant[]>('/merchants', {
+      params: { search },
     });
     return response.data;
   },
