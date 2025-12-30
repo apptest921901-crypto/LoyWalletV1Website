@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,9 +15,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { cardAPI, MerchantGroup } from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { session } = useAuth();
   const [merchants, setMerchants] = useState<MerchantGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -26,8 +28,10 @@ export default function HomeScreen() {
   const [expandedMerchants, setExpandedMerchants] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    loadMerchants();
-  }, []);
+    if (session) {
+      loadMerchants();
+    }
+  }, [session]);
 
   const loadMerchants = async () => {
     try {
