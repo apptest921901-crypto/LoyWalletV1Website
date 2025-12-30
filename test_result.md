@@ -131,15 +131,18 @@ backend:
   
   - task: "Get Single Card API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "GET /api/cards/{id} endpoint implemented, needs testing"
+      - working: true
+        agent: "testing"
+        comment: "GET /api/cards/{id} tested successfully. Returns correct card data for valid IDs, handles invalid IDs properly. Minor: Non-existent valid ObjectIds return 400 instead of 404 due to catch-all exception handler, but core functionality works correctly."
   
   - task: "Update Card API"
     implemented: true
