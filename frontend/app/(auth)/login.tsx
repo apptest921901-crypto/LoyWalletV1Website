@@ -30,7 +30,7 @@ export default function LoginScreen() {
     try {
       setLoading(true);
       await signIn(email.trim(), password);
-      router.replace('/(tabs)/');
+      router.replace('/');
     } catch (error: any) {
       Alert.alert('Login Failed', error.response?.data?.detail || 'Invalid email or password');
     } finally {
