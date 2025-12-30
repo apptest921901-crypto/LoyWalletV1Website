@@ -140,7 +140,7 @@ export default function AddCardScreen() {
       setNotes('');
       setImageBase64('');
       
-      router.push('/(tabs)/');
+      router.push('/');
     } catch (error) {
       console.error('Error saving card:', error);
       Alert.alert('Error', 'Failed to save card. Please try again.');
