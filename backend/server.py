@@ -18,8 +18,8 @@ supabase_url = os.environ['SUPABASE_URL']
 supabase_anon_key = os.environ['SUPABASE_ANON_KEY']
 supabase_service_key = os.environ['SUPABASE_SERVICE_KEY']
 
-# JWT Secret for verification
-JWT_SECRET = os.environ.get('SUPABASE_JWT_SECRET', 'your-jwt-secret')  # Get from Supabase settings
+# Note: JWT verification is handled by Supabase client library
+# No additional JWT secret needed
 
 # Create Supabase clients
 supabase: Client = create_client(supabase_url, supabase_anon_key)
