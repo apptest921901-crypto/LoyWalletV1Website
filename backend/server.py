@@ -139,16 +139,15 @@ async def signup(user: UserSignup):
     """Register a new user"""
     try:
         # Create auth user in Supabase
-        auth_response = supabase_admin.auth.admin_create_user({
+        sign_up_response = supabase.auth.sign_up({
             "email": user.email,
-            "password": user.password,
-            "email_confirm": True  # Auto-confirm for development
+            "password": user.password
         })
         
-        if not auth_response.user:
-            raise HTTPException(status_code=400, detail="Failed to create user")
+        if not sign_up_response.user:
+            raise HTTPException(status_code=400, detail="Failed to create user account. Please try again.")
         
-        user_id = auth_response.user.id
+        user_id = sign_up_response.user.id
         
         # Create user profile
         profile_data = {
@@ -160,23 +159,20 @@ async def signup(user: UserSignup):
         
         profile_response = supabase_admin.table("users").insert(profile_data).execute()
         
-        # Sign in the user to get session tokens
-        sign_in_response = supabase.auth.sign_in_with_password({
-            "email": user.email,
-            "password": user.password
-        })
-        
         return {
-            "message": "User created successfully",
+            "message": "Account created successfully! You can now sign in.",
             "user": profile_response.data[0] if profile_response.data else None,
             "session": {
-                "access_token": sign_in_response.session.access_token,
-                "refresh_token": sign_in_response.session.refresh_token
+                "access_token": sign_up_response.session.access_token if sign_up_response.session else None,
+                "refresh_token": sign_up_response.session.refresh_token if sign_up_response.session else None
             }
         }
     except Exception as e:
         logging.error(f"Signup error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        error_message = str(e)
+        if "duplicate key" in error_message.lower() or "unique" in error_message.lower():
+            raise HTTPException(status_code=400, detail="An account with this email or username already exists.")
+        raise HTTPException(status_code=400, detail=f"Failed to create account: {error_message}")
 
 @api_router.post("/auth/login")
 async def login(credentials: UserLogin):
