@@ -11,7 +11,7 @@ from datetime import datetime
 import base64
 
 # Backend URL from environment
-BACKEND_URL = "https://cardstack-10.preview.emergentagent.com/api"
+BACKEND_URL = "https://lovaltyorganizer.preview.emergentagent.com/api"
 
 # Test data
 TEST_CARDS = [
