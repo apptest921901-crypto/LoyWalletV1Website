@@ -118,7 +118,17 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>My Cards</Text>
+        <View style={styles.headerLeft}>
+          <Image 
+            source={{ uri: 'https://customer-assets.emergentagent.com/job_lovaltyorganizer/artifacts/cn1jsy8n_Logo%203%20circle.png' }}
+            style={styles.logoSmall}
+            resizeMode="contain"
+          />
+          <View>
+            <Text style={styles.title}>My Cards</Text>
+            <Text style={styles.headerSubtitle}>LoyWallet</Text>
+          </View>
+        </View>
         <View style={styles.searchContainer}>
           <Ionicons name="search" size={20} color="#8E8E93" style={styles.searchIcon} />
           <TextInput
