@@ -120,20 +120,17 @@ export default function AddCardScreen() {
       Alert.alert('Card Name Required', 'Please give your card a name (e.g., "Gold Member Card" or "Rewards Card").');
       return;
     }
-    if (!barcode.trim()) {
-      Alert.alert('Barcode Required', 'Please enter the barcode number from your card. You\'ll need this to use your card.');
-      return;
-    }
+    // Barcode is now optional - no validation needed
 
     try {
       setSaving(true);
       await cardAPI.createCard({
         merchant_id: selectedMerchantId,
         card_name: cardName.trim(),
-        barcode: barcode.trim(),
+        barcode: barcode.trim() || 'N/A',  // Use 'N/A' if empty
         notes: notes.trim(),
         image_base64: imageBase64,
-        is_favorite: false,
+        is_favorite: isFavorite,
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
