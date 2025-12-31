@@ -25,8 +25,8 @@ api.interceptors.request.use(
 );
 
 export interface Card {
-  id?: string;
-  merchant_id: number;
+  card_id?: string;
+  merchant_id: string;
   merchant_name?: string;
   card_name: string;
   barcode: string;
@@ -39,7 +39,7 @@ export interface Card {
 }
 
 export interface Merchant {
-  id: number;
+  merchant_id: string;
   name: string;
   description?: string;
   logo_url?: string;
@@ -49,7 +49,7 @@ export interface Merchant {
 
 export interface MerchantGroup {
   merchant_name: string;
-  merchant_id: number;
+  merchant_id: string;
   merchant_logo_url?: string;
   card_count: number;
   cards: Card[];
