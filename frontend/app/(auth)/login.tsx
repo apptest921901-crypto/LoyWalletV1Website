@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -68,8 +69,17 @@ export default function LoginScreen() {
         style={styles.keyboardView}
       >
         <View style={styles.content}>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Sign in to your account</Text>
+          {/* Logo Section */}
+          <View style={styles.logoContainer}>
+            <Image 
+              source={{ uri: 'https://customer-assets.emergentagent.com/job_lovaltyorganizer/artifacts/cn1jsy8n_Logo%203%20circle.png' }}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.appName}>LoyWallet</Text>
+            <Text style={styles.tagline}>Your Cards, Your Way</Text>
+            <Text style={styles.subTagline}>Digitize. Organize. Simplify.</Text>
+          </View>
 
           <View style={styles.form}>
             <View style={styles.inputGroup}>
@@ -135,18 +145,34 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 60,
+    paddingTop: 40,
   },
-  title: {
-    fontSize: 34,
-    fontWeight: '700',
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 16,
+  },
+  appName: {
+    fontSize: 36,
+    fontWeight: '800',
     color: '#000000',
     marginBottom: 8,
+    letterSpacing: -0.5,
   },
-  subtitle: {
-    fontSize: 17,
+  tagline: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#007AFF',
+    marginBottom: 4,
+  },
+  subTagline: {
+    fontSize: 14,
     color: '#8E8E93',
-    marginBottom: 40,
+    fontStyle: 'italic',
   },
   form: {
     flex: 1,
