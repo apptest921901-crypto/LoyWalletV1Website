@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '../context/AuthContext';
+import Toast from 'react-native-toast-message';
 
 export default function RootLayout() {
   return (
@@ -17,6 +18,7 @@ export default function RootLayout() {
             }} 
           />
         </Stack>
+        <Toast />
       </AuthProvider>
     </SafeAreaProvider>
   );
