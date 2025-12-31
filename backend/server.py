@@ -323,7 +323,7 @@ async def get_cards(user_id: str = Depends(verify_token), search: Optional[str] 
     """Get all cards with optional search and favorite filter"""
     try:
         query = supabase_admin.table("loyalty_cards").select(
-            "*, merchant:merchants(id, name, logo_url, category)"
+            "*, merchant:merchants(merchant_id, name, logo_url, category)"
         ).eq("user_id", user_id)
         
         if favorites_only:
@@ -349,12 +349,12 @@ async def get_cards(user_id: str = Depends(verify_token), search: Optional[str] 
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/cards/{card_id}", response_model=LoyaltyCard)
-async def get_card(card_id: int, user_id: str = Depends(verify_token)):
+async def get_card(card_id: str, user_id: str = Depends(verify_token)):
     """Get a specific card by ID"""
     try:
         response = supabase_admin.table("loyalty_cards").select(
-            "*, merchant:merchants(id, name, logo_url, category)"
-        ).eq("id", card_id).eq("user_id", user_id).single().execute()
+            "*, merchant:merchants(merchant_id, name, logo_url, category)"
+        ).eq("card_id", card_id).eq("user_id", user_id).single().execute()
         
         if not response.data:
             raise HTTPException(status_code=404, detail="Card not found")
@@ -374,7 +374,7 @@ async def get_card(card_id: int, user_id: str = Depends(verify_token)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.put("/cards/{card_id}", response_model=LoyaltyCard)
-async def update_card(card_id: int, card_update: LoyaltyCardUpdate, user_id: str = Depends(verify_token)):
+async def update_card(card_id: str, card_update: LoyaltyCardUpdate, user_id: str = Depends(verify_token)):
     """Update a card"""
     try:
         update_data = {k: v for k, v in card_update.dict().items() if v is not None}
@@ -383,7 +383,7 @@ async def update_card(card_id: int, card_update: LoyaltyCardUpdate, user_id: str
             raise HTTPException(status_code=400, detail="No fields to update")
         
         response = supabase_admin.table("loyalty_cards").update(update_data).eq(
-            "id", card_id
+            "card_id", card_id
         ).eq("user_id", user_id).execute()
         
         if not response.data:
@@ -391,8 +391,8 @@ async def update_card(card_id: int, card_update: LoyaltyCardUpdate, user_id: str
         
         # Fetch updated card with merchant details
         card_response = supabase_admin.table("loyalty_cards").select(
-            "*, merchant:merchants(id, name, logo_url, category)"
-        ).eq("id", card_id).single().execute()
+            "*, merchant:merchants(merchant_id, name, logo_url, category)"
+        ).eq("card_id", card_id).single().execute()
         
         # Flatten merchant data
         result = card_response.data
@@ -409,11 +409,11 @@ async def update_card(card_id: int, card_update: LoyaltyCardUpdate, user_id: str
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.delete("/cards/{card_id}")
-async def delete_card(card_id: int, user_id: str = Depends(verify_token)):
+async def delete_card(card_id: str, user_id: str = Depends(verify_token)):
     """Delete a card"""
     try:
         response = supabase_admin.table("loyalty_cards").delete().eq(
-            "id", card_id
+            "card_id", card_id
         ).eq("user_id", user_id).execute()
         
         if not response.data:
@@ -427,12 +427,12 @@ async def delete_card(card_id: int, user_id: str = Depends(verify_token)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.put("/cards/{card_id}/favorite")
-async def toggle_favorite(card_id: int, is_favorite: bool, user_id: str = Depends(verify_token)):
+async def toggle_favorite(card_id: str, is_favorite: bool, user_id: str = Depends(verify_token)):
     """Toggle favorite status of a card"""
     try:
         response = supabase_admin.table("loyalty_cards").update(
             {"is_favorite": is_favorite}
-        ).eq("id", card_id).eq("user_id", user_id).execute()
+        ).eq("card_id", card_id).eq("user_id", user_id).execute()
         
         if not response.data:
             raise HTTPException(status_code=404, detail="Card not found")
