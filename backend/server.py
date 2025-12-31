@@ -449,7 +449,7 @@ async def get_merchants_grouped(user_id: str = Depends(verify_token), search: Op
     """Get cards grouped by merchant"""
     try:
         query = supabase_admin.table("loyalty_cards").select(
-            "*, merchant:merchants(id, name, logo_url, category)"
+            "*, merchant:merchants(merchant_id, name, logo_url, category)"
         ).eq("user_id", user_id)
         
         if favorites_only:
@@ -497,7 +497,7 @@ async def get_stats(user_id: str = Depends(verify_token)):
     try:
         # Get all cards
         all_cards_response = supabase_admin.table("loyalty_cards").select(
-            "id, merchant_id, is_favorite"
+            "card_id, merchant_id, is_favorite"
         ).eq("user_id", user_id).execute()
         
         total_cards = len(all_cards_response.data)
