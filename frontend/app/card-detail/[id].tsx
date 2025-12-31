@@ -687,39 +687,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
   },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#000000',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   modalCloseButton: {
     position: 'absolute',
     top: 60,
     right: 24,
     zIndex: 10,
     padding: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     borderRadius: 20,
   },
-  zoomScrollView: {
-    flex: 1,
-    width: '100%',
-  },
-  zoomScrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  zoomedImage: {
-    width: '100%',
-    height: '100%',
-  },
   zoomHintContainer: {
-    position: 'absolute',
-    bottom: 60,
     alignItems: 'center',
-    width: '100%',
+    paddingBottom: 40,
+    backgroundColor: 'transparent',
   },
   zoomHintText: {
     color: '#FFFFFF',
