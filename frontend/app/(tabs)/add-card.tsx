@@ -11,10 +11,10 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -23,7 +23,8 @@ import { cardAPI, Merchant } from '../../utils/api';
 export default function AddCardScreen() {
   const router = useRouter();
   const [merchants, setMerchants] = useState<Merchant[]>([]);
-  const [selectedMerchantId, setSelectedMerchantId] = useState<string | null>(null);
+  const [selectedMerchant, setSelectedMerchant] = useState<Merchant | null>(null);
+  const [merchantDropdownVisible, setMerchantDropdownVisible] = useState(false);
   const [cardName, setCardName] = useState('');
   const [barcode, setBarcode] = useState('');
   const [notes, setNotes] = useState('');
@@ -31,7 +32,6 @@ export default function AddCardScreen() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [merchantDropdownVisible, setMerchantDropdownVisible] = useState(false);
 
   useEffect(() => {
     loadMerchants();
@@ -42,7 +42,7 @@ export default function AddCardScreen() {
       const data = await cardAPI.getMerchants();
       setMerchants(data);
       if (data.length > 0) {
-        setSelectedMerchantId(data[0].merchant_id);
+        setSelectedMerchant(data[0]);
       }
     } catch (error) {
       console.error('Error loading merchants:', error);
@@ -112,7 +112,7 @@ export default function AddCardScreen() {
 
   const handleSave = async () => {
     // Validation
-    if (!selectedMerchantId) {
+    if (!selectedMerchant) {
       Alert.alert('Select a Merchant', 'Please choose which store or brand this loyalty card is for.');
       return;
     }
@@ -125,7 +125,7 @@ export default function AddCardScreen() {
     try {
       setSaving(true);
       await cardAPI.createCard({
-        merchant_id: selectedMerchantId,
+        merchant_id: selectedMerchant.merchant_id,
         card_name: cardName.trim(),
         barcode: barcode.trim() || 'N/A',  // Use 'N/A' if empty
         notes: notes.trim(),
@@ -146,6 +146,7 @@ export default function AddCardScreen() {
             setBarcode('');
             setNotes('');
             setImageBase64('');
+            setIsFavorite(false);
             router.push('/');
           }
         }]
@@ -203,32 +204,29 @@ export default function AddCardScreen() {
 
           {/* Form Fields */}
           <View style={styles.form}>
+            {/* Custom Merchant Dropdown */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Merchant *</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={selectedMerchantId}
-                  onValueChange={(itemValue) => setSelectedMerchantId(itemValue)}
-                  style={styles.picker}
-                >
-                  {merchants.map((merchant) => (
-                    <Picker.Item key={merchant.merchant_id} label={merchant.name} value={merchant.merchant_id} />
-                  ))}
-                </Picker>
-              </View>
-              {/* Show merchant logo */}
-              {selectedMerchantId && merchants.find(m => m.merchant_id === selectedMerchantId)?.logo_url && (
-                <View style={styles.selectedMerchantLogoContainer}>
-                  <Image 
-                    source={{ uri: merchants.find(m => m.merchant_id === selectedMerchantId)?.logo_url }} 
-                    style={styles.selectedMerchantLogo}
-                    resizeMode="contain"
-                  />
-                  <Text style={styles.selectedMerchantText}>
-                    {merchants.find(m => m.merchant_id === selectedMerchantId)?.name}
-                  </Text>
-                </View>
-              )}
+              <TouchableOpacity
+                style={styles.customDropdown}
+                onPress={() => setMerchantDropdownVisible(true)}
+              >
+                {selectedMerchant ? (
+                  <View style={styles.selectedMerchantDisplay}>
+                    {selectedMerchant.logo_url && (
+                      <Image
+                        source={{ uri: selectedMerchant.logo_url }}
+                        style={styles.dropdownLogo}
+                        resizeMode="contain"
+                      />
+                    )}
+                    <Text style={styles.selectedMerchantName}>{selectedMerchant.name}</Text>
+                  </View>
+                ) : (
+                  <Text style={styles.dropdownPlaceholder}>Select a merchant</Text>
+                )}
+                <Ionicons name="chevron-down" size={24} color="#8E8E93" />
+              </TouchableOpacity>
             </View>
 
             <View style={styles.inputGroup}>
@@ -243,7 +241,7 @@ export default function AddCardScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Barcode Number *</Text>
+              <Text style={styles.label}>Barcode Number (Optional)</Text>
               <TextInput
                 style={styles.input}
                 placeholder="e.g., 1234567890"
@@ -267,6 +265,29 @@ export default function AddCardScreen() {
                 textAlignVertical="top"
               />
             </View>
+
+            {/* Favorite Toggle */}
+            <TouchableOpacity
+              style={styles.favoriteToggle}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setIsFavorite(!isFavorite);
+              }}
+            >
+              <View style={styles.favoriteToggleContent}>
+                <Ionicons
+                  name={isFavorite ? 'star' : 'star-outline'}
+                  size={28}
+                  color={isFavorite ? '#FFD700' : '#8E8E93'}
+                />
+                <View style={styles.favoriteTextContainer}>
+                  <Text style={styles.favoriteToggleLabel}>Add to Favorites</Text>
+                  <Text style={styles.favoriteToggleHint}>
+                    Mark this card as a favorite for quick access
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
           </View>
         </ScrollView>
 
@@ -285,6 +306,53 @@ export default function AddCardScreen() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+
+      {/* Merchant Selection Modal */}
+      <Modal
+        visible={merchantDropdownVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setMerchantDropdownVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Merchant</Text>
+              <TouchableOpacity onPress={() => setMerchantDropdownVisible(false)}>
+                <Ionicons name="close" size={28} color="#000000" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.merchantList}>
+              {merchants.map((merchant) => (
+                <TouchableOpacity
+                  key={merchant.merchant_id}
+                  style={[
+                    styles.merchantItem,
+                    selectedMerchant?.merchant_id === merchant.merchant_id && styles.merchantItemSelected
+                  ]}
+                  onPress={() => {
+                    setSelectedMerchant(merchant);
+                    setMerchantDropdownVisible(false);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }}
+                >
+                  {merchant.logo_url && (
+                    <Image
+                      source={{ uri: merchant.logo_url }}
+                      style={styles.merchantItemLogo}
+                      resizeMode="contain"
+                    />
+                  )}
+                  <Text style={styles.merchantItemName}>{merchant.name}</Text>
+                  {selectedMerchant?.merchant_id === merchant.merchant_id && (
+                    <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -367,15 +435,37 @@ const styles = StyleSheet.create({
     color: '#000000',
     marginBottom: 8,
   },
-  pickerContainer: {
+  customDropdown: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E5EA',
-    overflow: 'hidden',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  picker: {
-    height: 50,
+  selectedMerchantDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  dropdownLogo: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    marginRight: 12,
+    backgroundColor: '#F2F2F7',
+  },
+  selectedMerchantName: {
+    fontSize: 16,
+    color: '#000000',
+    flex: 1,
+  },
+  dropdownPlaceholder: {
+    fontSize: 16,
+    color: '#8E8E93',
   },
   input: {
     backgroundColor: '#FFFFFF',
@@ -390,6 +480,32 @@ const styles = StyleSheet.create({
   textArea: {
     height: 100,
     paddingTop: 12,
+  },
+  favoriteToggle: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+  },
+  favoriteToggleContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  favoriteTextContainer: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  favoriteToggleLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 4,
+  },
+  favoriteToggleHint: {
+    fontSize: 13,
+    color: '#8E8E93',
   },
   footer: {
     paddingHorizontal: 24,
@@ -419,23 +535,53 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
   },
-  selectedMerchantLogoContainer: {
-    marginTop: 12,
-    padding: 12,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 8,
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '80%',
+  },
+  modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
   },
-  selectedMerchantLogo: {
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#000000',
+  },
+  merchantList: {
+    paddingHorizontal: 24,
+  },
+  merchantItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F2F2F7',
+  },
+  merchantItemSelected: {
+    backgroundColor: '#F0F8FF',
+  },
+  merchantItemLogo: {
     width: 40,
     height: 40,
     borderRadius: 8,
-    marginRight: 12,
+    marginRight: 16,
+    backgroundColor: '#F2F2F7',
   },
-  selectedMerchantText: {
+  merchantItemName: {
     fontSize: 16,
-    fontWeight: '500',
     color: '#000000',
     flex: 1,
   },
