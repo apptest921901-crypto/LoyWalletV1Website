@@ -47,7 +47,7 @@ class BackendTester:
             "response": response_data
         })
 
-    def make_request(self, method: str, endpoint: str, data: dict = None, headers: dict = None) -> tuple:
+    def make_request(self, method: str, endpoint: str, data: dict = None, headers: dict = None, params: dict = None) -> tuple:
         """Make HTTP request and return (success, response, status_code)"""
         url = f"{self.base_url}{endpoint}"
         
@@ -59,13 +59,13 @@ class BackendTester:
         
         try:
             if method.upper() == "GET":
-                response = self.session.get(url, headers=headers, params=data)
+                response = self.session.get(url, headers=headers, params=data or params)
             elif method.upper() == "POST":
-                response = self.session.post(url, json=data, headers=headers)
+                response = self.session.post(url, json=data, headers=headers, params=params)
             elif method.upper() == "PUT":
-                response = self.session.put(url, json=data, headers=headers)
+                response = self.session.put(url, json=data, headers=headers, params=params)
             elif method.upper() == "DELETE":
-                response = self.session.delete(url, headers=headers)
+                response = self.session.delete(url, headers=headers, params=params)
             else:
                 return False, None, 0
             
