@@ -103,7 +103,14 @@ export default function ProfileScreen() {
         style={styles.keyboardView}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Profile</Text>
+          <View style={styles.headerContent}>
+            <Image 
+              source={{ uri: 'https://customer-assets.emergentagent.com/job_lovaltyorganizer/artifacts/cn1jsy8n_Logo%203%20circle.png' }}
+              style={styles.logoSmall}
+              resizeMode="contain"
+            />
+            <Text style={styles.title}>Profile</Text>
+          </View>
           {!editing && (
             <TouchableOpacity onPress={() => setEditing(true)} style={styles.editButton}>
               <Ionicons name="create-outline" size={24} color="#007AFF" />
