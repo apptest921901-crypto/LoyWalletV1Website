@@ -153,7 +153,7 @@ async def signup(user: UserSignup):
         
         # Create user profile
         profile_data = {
-            "id": user_id,
+            "user_id": user_id,
             "email": user.email,
             "full_name": user.full_name,
             "username": user.username
