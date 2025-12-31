@@ -264,6 +264,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  logoSmall: {
+    width: 40,
+    height: 40,
+    marginRight: 12,
+    borderRadius: 20,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#8E8E93',
+    marginTop: 2,
   },
   title: {
     fontSize: 34,
