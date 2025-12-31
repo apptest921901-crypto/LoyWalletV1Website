@@ -11,24 +11,32 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { cardAPI, Card } from '../../utils/api';
+import * as ImagePicker from 'expo-image-picker';
+import { Picker } from '@react-native-picker/picker';
+import { cardAPI, Card, Merchant } from '../../utils/api';
+import Toast from 'react-native-toast-message';
 
 export default function CardDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [card, setCard] = useState<Card | null>(null);
+  const [merchants, setMerchants] = useState<Merchant[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [editedCard, setEditedCard] = useState<Partial<Card>>({});
+  const [imageZoomModal, setImageZoomModal] = useState(false);
 
   useEffect(() => {
     if (id) {
       loadCard();
+      loadMerchants();
     }
   }, [id]);
 
@@ -40,23 +48,112 @@ export default function CardDetailScreen() {
       setEditedCard(data);
     } catch (error) {
       console.error('Error loading card:', error);
-      Alert.alert('Error', 'Failed to load card details');
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to load card details',
+        position: 'top',
+      });
     } finally {
       setLoading(false);
     }
   };
 
+  const loadMerchants = async () => {
+    try {
+      const data = await cardAPI.getMerchants();
+      setMerchants(data);
+    } catch (error) {
+      console.error('Error loading merchants:', error);
+    }
+  };
+
+  const pickImage = async (useCamera: boolean) => {
+    try {
+      const permissionResult = useCamera
+        ? await ImagePicker.requestCameraPermissionsAsync()
+        : await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permissionResult.granted) {
+        Alert.alert(
+          'Permission Required',
+          `We need ${useCamera ? 'camera' : 'photo library'} permissions to update card image.`
+        );
+        return;
+      }
+
+      const result = useCamera
+        ? await ImagePicker.launchCameraAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [16, 10],
+            quality: 0.8,
+            base64: true,
+          })
+        : await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [16, 10],
+            quality: 0.8,
+            base64: true,
+          });
+
+      if (!result.canceled && result.assets[0].base64) {
+        const base64String = `data:image/jpeg;base64,${result.assets[0].base64}`;
+        setEditedCard({ ...editedCard, image_base64: base64String });
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to pick image',
+        position: 'top',
+      });
+    }
+  };
+
+  const showImageSourceOptions = () => {
+    Alert.alert('Update Card Image', 'Choose an option:', [
+      {
+        text: 'Take Photo',
+        onPress: () => pickImage(true),
+      },
+      {
+        text: 'Choose from Library',
+        onPress: () => pickImage(false),
+      },
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+    ]);
+  };
+
   const handleSave = async () => {
-    if (!card?.id) return;
+    if (!card?.card_id) return;
 
     try {
-      await cardAPI.updateCard(card.id, editedCard);
+      setSaving(true);
+      await cardAPI.updateCard(card.card_id, editedCard);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Toast.show({
+        type: 'success',
+        text1: 'Card updated successfully!',
+        position: 'top',
+      });
       setCard({ ...card, ...editedCard });
       setEditing(false);
+      // Reload to get the latest merchant data
+      loadCard();
     } catch (error) {
       console.error('Error updating card:', error);
-      Alert.alert('Error', 'Failed to update card');
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to update card',
+        position: 'top',
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -71,14 +168,23 @@ export default function CardDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              if (card?.id) {
-                await cardAPI.deleteCard(card.id);
+              if (card?.card_id) {
+                await cardAPI.deleteCard(card.card_id);
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                Toast.show({
+                  type: 'success',
+                  text1: 'Card deleted successfully',
+                  position: 'top',
+                });
                 router.back();
               }
             } catch (error) {
               console.error('Error deleting card:', error);
-              Alert.alert('Error', 'Failed to delete card');
+              Toast.show({
+                type: 'error',
+                text1: 'Failed to delete card',
+                position: 'top',
+              });
             }
           },
         },
@@ -87,12 +193,18 @@ export default function CardDetailScreen() {
   };
 
   const toggleFavorite = async () => {
-    if (!card?.id) return;
+    if (!card?.card_id) return;
 
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      await cardAPI.toggleFavorite(card.id, !card.is_favorite);
+      await cardAPI.toggleFavorite(card.card_id, !card.is_favorite);
       setCard({ ...card, is_favorite: !card.is_favorite });
+      Toast.show({
+        type: 'success',
+        text1: !card.is_favorite ? '⭐ Favorited' : 'Removed from favorites',
+        position: 'top',
+        visibilityTime: 1000,
+      });
     } catch (error) {
       console.error('Error toggling favorite:', error);
     }
@@ -118,6 +230,8 @@ export default function CardDetailScreen() {
     );
   }
 
+  const currentImage = editing ? (editedCard.image_base64 || card.image_base64) : card.image_base64;
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <KeyboardAvoidingView
@@ -141,19 +255,49 @@ export default function CardDetailScreen() {
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
           {/* Card Image */}
-          {card.image_base64 ? (
-            <View style={styles.imageContainer}>
-              <Image source={{ uri: card.image_base64 }} style={styles.cardImage} />
-            </View>
-          ) : (
-            <View style={[styles.imageContainer, styles.noImageContainer]}>
-              <Ionicons name="card-outline" size={64} color="#E5E5EA" />
-            </View>
-          )}
+          <TouchableOpacity 
+            activeOpacity={0.9}
+            onPress={() => currentImage && setImageZoomModal(true)}
+            onLongPress={editing ? showImageSourceOptions : undefined}
+          >
+            {currentImage ? (
+              <View style={styles.imageContainer}>
+                <Image source={{ uri: currentImage }} style={styles.cardImage} />
+                {editing && (
+                  <TouchableOpacity 
+                    style={styles.editImageButton}
+                    onPress={showImageSourceOptions}
+                  >
+                    <Ionicons name="camera" size={20} color="#FFFFFF" />
+                  </TouchableOpacity>
+                )}
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={[styles.imageContainer, styles.noImageContainer]}
+                onPress={editing ? showImageSourceOptions : undefined}
+              >
+                <Ionicons name="card-outline" size={64} color="#E5E5EA" />
+                {editing && <Text style={styles.addPhotoText}>Tap to add photo</Text>}
+              </TouchableOpacity>
+            )}
+          </TouchableOpacity>
 
-          {/* Merchant Badge */}
-          <View style={styles.merchantBadge}>
-            <Text style={styles.merchantBadgeText}>{card.merchant_name}</Text>
+          {/* Merchant Badge with Logo */}
+          <View style={styles.merchantBadgeContainer}>
+            {card.merchant_logo_url && (
+              <Image 
+                source={{ uri: card.merchant_logo_url }}
+                style={styles.merchantBadgeLogo}
+                resizeMode="contain"
+              />
+            )}
+            <Text style={styles.merchantBadgeText}>
+              {editing && editedCard.merchant_id ? 
+                merchants.find(m => m.merchant_id === editedCard.merchant_id)?.name || card.merchant_name
+                : card.merchant_name
+              }
+            </Text>
           </View>
 
           {/* Barcode Display */}
@@ -179,24 +323,30 @@ export default function CardDetailScreen() {
                   style={styles.fieldInput}
                   value={editedCard.card_name}
                   onChangeText={(text) => setEditedCard({ ...editedCard, card_name: text })}
+                  placeholder="e.g., Gold Member Card"
+                  placeholderTextColor="#8E8E93"
                 />
               ) : (
                 <Text style={styles.fieldValue}>{card.card_name}</Text>
               )}
             </View>
 
-            <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>Merchant</Text>
-              {editing ? (
-                <TextInput
-                  style={styles.fieldInput}
-                  value={editedCard.merchant_name}
-                  onChangeText={(text) => setEditedCard({ ...editedCard, merchant_name: text })}
-                />
-              ) : (
-                <Text style={styles.fieldValue}>{card.merchant_name}</Text>
-              )}
-            </View>
+            {editing && (
+              <View style={styles.fieldGroup}>
+                <Text style={styles.fieldLabel}>Merchant</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={editedCard.merchant_id || card.merchant_id}
+                    onValueChange={(itemValue) => setEditedCard({ ...editedCard, merchant_id: itemValue })}
+                    style={styles.picker}
+                  >
+                    {merchants.map((merchant) => (
+                      <Picker.Item key={merchant.merchant_id} label={merchant.name} value={merchant.merchant_id} />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+            )}
 
             <View style={styles.fieldGroup}>
               <Text style={styles.fieldLabel}>Notes</Text>
@@ -208,6 +358,8 @@ export default function CardDetailScreen() {
                   multiline
                   numberOfLines={4}
                   textAlignVertical="top"
+                  placeholder="Add notes..."
+                  placeholderTextColor="#8E8E93"
                 />
               ) : (
                 <Text style={styles.fieldValue}>{card.notes || 'No notes'}</Text>
@@ -229,8 +381,16 @@ export default function CardDetailScreen() {
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.actionButton, styles.saveButton]} onPress={handleSave}>
-                <Text style={styles.saveButtonText}>Save</Text>
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.saveButton, saving && styles.saveButtonDisabled]} 
+                onPress={handleSave}
+                disabled={saving}
+              >
+                {saving ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.saveButtonText}>Save</Text>
+                )}
               </TouchableOpacity>
             </View>
           ) : (
@@ -247,6 +407,29 @@ export default function CardDetailScreen() {
           )}
         </View>
       </KeyboardAvoidingView>
+
+      {/* Image Zoom Modal */}
+      <Modal
+        visible={imageZoomModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setImageZoomModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <TouchableOpacity 
+            style={styles.modalCloseButton}
+            onPress={() => setImageZoomModal(false)}
+          >
+            <Ionicons name="close" size={32} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Image 
+            source={{ uri: currentImage || '' }} 
+            style={styles.zoomedImage}
+            resizeMode="contain"
+          />
+          <Text style={styles.zoomHintText}>Rotate for better scanning</Text>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -311,7 +494,30 @@ const styles = StyleSheet.create({
     height: '100%',
     resizeMode: 'cover',
   },
-  merchantBadge: {
+  editImageButton: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+    backgroundColor: '#007AFF',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  addPhotoText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#8E8E93',
+  },
+  merchantBadgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#007AFF',
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -324,6 +530,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  merchantBadgeLogo: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    marginRight: 8,
+    backgroundColor: '#FFFFFF',
   },
   merchantBadgeText: {
     fontSize: 15,
@@ -397,6 +610,16 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: 'top',
   },
+  pickerContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#007AFF',
+    overflow: 'hidden',
+  },
+  picker: {
+    height: 50,
+  },
   footer: {
     paddingHorizontal: 24,
     paddingVertical: 16,
@@ -445,9 +668,36 @@ const styles = StyleSheet.create({
   saveButton: {
     backgroundColor: '#007AFF',
   },
+  saveButtonDisabled: {
+    backgroundColor: '#8E8E93',
+  },
   saveButtonText: {
     fontSize: 17,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCloseButton: {
+    position: 'absolute',
+    top: 60,
+    right: 24,
+    zIndex: 10,
+    padding: 8,
+  },
+  zoomedImage: {
+    width: '100%',
+    height: '80%',
+  },
+  zoomHintText: {
+    position: 'absolute',
+    bottom: 60,
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
