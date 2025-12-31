@@ -102,7 +102,7 @@ class LoyaltyCardUpdate(BaseModel):
 
 class MerchantGroup(BaseModel):
     merchant_name: str
-    merchant_id: int
+    merchant_id: str
     merchant_logo_url: Optional[str] = None
     card_count: int
     cards: List[LoyaltyCard]
