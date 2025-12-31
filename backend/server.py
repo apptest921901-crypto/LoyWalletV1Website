@@ -229,7 +229,7 @@ async def login(credentials: UserLogin):
 async def get_profile(user_id: str = Depends(verify_token)):
     """Get current user's profile"""
     try:
-        response = supabase_admin.table("users").select("*").eq("id", user_id).single().execute()
+        response = supabase_admin.table("users").select("*").eq("user_id", user_id).single().execute()
         return response.data
     except Exception as e:
         logging.error(f"Error fetching profile: {e}")
@@ -244,7 +244,7 @@ async def update_profile(profile_update: UserProfileUpdate, user_id: str = Depen
         if not update_data:
             raise HTTPException(status_code=400, detail="No fields to update")
         
-        response = supabase_admin.table("users").update(update_data).eq("id", user_id).execute()
+        response = supabase_admin.table("users").update(update_data).eq("user_id", user_id).execute()
         
         if not response.data:
             raise HTTPException(status_code=404, detail="Profile not found")
