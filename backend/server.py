@@ -138,16 +138,18 @@ def verify_token(authorization: Optional[str] = Header(None)) -> str:
 async def signup(user: UserSignup):
     """Register a new user"""
     try:
-        # Create auth user in Supabase
-        sign_up_response = supabase.auth.sign_up({
+        # Create auth user in Supabase with auto-confirmed email using admin API
+        # This bypasses email confirmation requirement
+        auth_response = supabase_admin.auth.admin.create_user({
             "email": user.email,
-            "password": user.password
+            "password": user.password,
+            "email_confirm": True  # Auto-confirm the email
         })
         
-        if not sign_up_response.user:
+        if not auth_response.user:
             raise HTTPException(status_code=400, detail="Failed to create user account. Please try again.")
         
-        user_id = sign_up_response.user.id
+        user_id = auth_response.user.id
         
         # Create user profile
         profile_data = {
@@ -159,19 +161,40 @@ async def signup(user: UserSignup):
         
         profile_response = supabase_admin.table("users").insert(profile_data).execute()
         
-        return {
-            "message": "Account created successfully! You can now sign in.",
-            "user": profile_response.data[0] if profile_response.data else None,
-            "session": {
-                "access_token": sign_up_response.session.access_token if sign_up_response.session else None,
-                "refresh_token": sign_up_response.session.refresh_token if sign_up_response.session else None
+        # Now sign in the user to get session tokens
+        try:
+            sign_in_response = supabase.auth.sign_in_with_password({
+                "email": user.email,
+                "password": user.password
+            })
+            
+            return {
+                "message": "Account created successfully! You're now logged in.",
+                "user": profile_response.data[0] if profile_response.data else None,
+                "session": {
+                    "access_token": sign_in_response.session.access_token if sign_in_response.session else None,
+                    "refresh_token": sign_in_response.session.refresh_token if sign_in_response.session else None
+                }
             }
-        }
+        except Exception as login_error:
+            # User created but auto-login failed, they can login manually
+            logging.warning(f"User created but auto-login failed: {login_error}")
+            return {
+                "message": "Account created successfully! Please sign in with your credentials.",
+                "user": profile_response.data[0] if profile_response.data else None,
+                "session": {
+                    "access_token": None,
+                    "refresh_token": None
+                }
+            }
+        
     except Exception as e:
         logging.error(f"Signup error: {e}")
         error_message = str(e)
         if "duplicate key" in error_message.lower() or "unique" in error_message.lower():
             raise HTTPException(status_code=400, detail="An account with this email or username already exists.")
+        if "already registered" in error_message.lower():
+            raise HTTPException(status_code=400, detail="This email is already registered. Please try logging in instead.")
         raise HTTPException(status_code=400, detail=f"Failed to create account: {error_message}")
 
 @api_router.post("/auth/login")
