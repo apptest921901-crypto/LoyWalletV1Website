@@ -7,12 +7,12 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
+import Toast from 'react-native-toast-message';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -23,33 +23,39 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Missing Information', 'Please enter both your email and password to sign in.');
+      Toast.show({
+        type: 'error',
+        text1: 'Missing Information',
+        text2: 'Please enter both your email and password',
+        position: 'top',
+      });
       return;
     }
 
     try {
       setLoading(true);
       await signIn(email.trim(), password);
-      // Navigation is handled by AuthContext automatically
     } catch (error: any) {
-      console.error('Login error:', error);
-      
-      let errorMessage = 'We couldn\'t sign you in. Please check your credentials and try again.';
+      let errorMessage = 'Please check your credentials and try again';
       
       if (error.response?.data?.detail) {
         const detail = error.response.data.detail;
         if (detail.includes('Invalid') || detail.includes('credentials')) {
-          errorMessage = 'Incorrect email or password. Please try again or create a new account.';
+          errorMessage = 'Incorrect email or password';
         } else {
           errorMessage = detail;
         }
       } else if (error.response?.status === 401) {
-        errorMessage = 'Incorrect email or password. Please try again.';
-      } else if (error.message) {
-        errorMessage = error.message;
+        errorMessage = 'Incorrect email or password';
       }
       
-      Alert.alert('Sign In Failed', errorMessage);
+      Toast.show({
+        type: 'error',
+        text1: 'Sign In Failed',
+        text2: errorMessage,
+        position: 'top',
+        visibilityTime: 3000,
+      });
     } finally {
       setLoading(false);
     }
