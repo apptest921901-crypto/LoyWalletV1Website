@@ -289,7 +289,6 @@ const styles = StyleSheet.create({
     fontSize: 34,
     fontWeight: '700',
     color: '#000000',
-    marginBottom: 16,
   },
   searchContainer: {
     flexDirection: 'row',
