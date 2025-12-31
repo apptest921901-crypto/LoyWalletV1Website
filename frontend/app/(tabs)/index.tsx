@@ -198,9 +198,9 @@ export default function HomeScreen() {
                 <View style={styles.cardsContainer}>
                   {merchant.cards.map((card) => (
                     <TouchableOpacity
-                      key={card.id}
+                      key={card.card_id}
                       style={styles.cardTile}
-                      onPress={() => card.id && handleCardPress(card.id.toString())}
+                      onPress={() => card.card_id && handleCardPress(card.card_id.toString())}
                     >
                       <View style={styles.cardContent}>
                         <View style={styles.cardTextContainer}>
@@ -210,7 +210,7 @@ export default function HomeScreen() {
                         <TouchableOpacity
                           onPress={(e) => {
                             e.stopPropagation();
-                            card.id && toggleFavorite(card.id.toString(), card.is_favorite);
+                            card.card_id && toggleFavorite(card.card_id.toString(), card.is_favorite);
                           }}
                           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                         >
