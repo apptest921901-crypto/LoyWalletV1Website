@@ -85,7 +85,7 @@ class LoyaltyCard(BaseModel):
     merchant_category: Optional[str] = None
 
 class LoyaltyCardCreate(BaseModel):
-    merchant_id: int
+    merchant_id: str
     card_name: str
     barcode: str
     notes: Optional[str] = ""
@@ -98,7 +98,7 @@ class LoyaltyCardUpdate(BaseModel):
     notes: Optional[str] = None
     image_base64: Optional[str] = None
     is_favorite: Optional[bool] = None
-    merchant_id: Optional[int] = None
+    merchant_id: Optional[str] = None
 
 class MerchantGroup(BaseModel):
     merchant_name: str
