@@ -422,7 +422,8 @@ class BackendTester:
             return False
         
         # Toggle to false using query parameter
-        success, response, status_code = self.make_request("PUT", f"/cards/{self.test_card_id}/favorite?is_favorite=false")
+        success, response, status_code = self.make_request("PUT", f"/cards/{self.test_card_id}/favorite", 
+                                                         params={"is_favorite": False})
         
         if success and status_code == 200:
             try:
