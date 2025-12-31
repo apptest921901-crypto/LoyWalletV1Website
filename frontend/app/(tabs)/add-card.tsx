@@ -28,8 +28,10 @@ export default function AddCardScreen() {
   const [barcode, setBarcode] = useState('');
   const [notes, setNotes] = useState('');
   const [imageBase64, setImageBase64] = useState('');
+  const [isFavorite, setIsFavorite] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [merchantDropdownVisible, setMerchantDropdownVisible] = useState(false);
 
   useEffect(() => {
     loadMerchants();
