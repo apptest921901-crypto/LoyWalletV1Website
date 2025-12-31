@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend API Testing for LoyaltyApp
-Tests all CRUD operations and API endpoints
+Comprehensive Backend API Testing for Loyalty Card Organizer
+Tests all endpoints with updated schema using UUIDs for card_id, merchant_id, user_id
 """
 
 import requests
@@ -9,44 +9,16 @@ import json
 import sys
 from datetime import datetime
 import base64
+import uuid
 
 # Backend URL from environment
 BACKEND_URL = "https://lovaltyorganizer.preview.emergentagent.com/api"
 
-# Test data
-TEST_CARDS = [
-    {
-        "merchant_name": "Starbucks",
-        "card_name": "Gold Member Card",
-        "barcode": "123456789012",
-        "notes": "My favorite coffee shop",
-        "image_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-        "is_favorite": True
-    },
-    {
-        "merchant_name": "Target",
-        "card_name": "Circle Rewards",
-        "barcode": "987654321098",
-        "notes": "Great deals and discounts",
-        "image_base64": "",
-        "is_favorite": False
-    },
-    {
-        "merchant_name": "Starbucks",
-        "card_name": "Rewards Card",
-        "barcode": "555666777888",
-        "notes": "Secondary Starbucks card",
-        "image_base64": "",
-        "is_favorite": False
-    }
-]
-
-# Known test card IDs from the review request
-KNOWN_CARD_IDS = [
-    "6953d824b7a743b1e7d03bd6",  # Starbucks Gold Member Card, favorite
-    "6953d82bb7a743b1e7d03bd7",  # Target Circle Rewards
-    "6953d82bb7a743b1e7d03bd8"   # Starbucks Rewards Card
-]
+# Test user credentials
+TEST_USER_EMAIL = "testuser@loyaltyapp.com"
+TEST_USER_PASSWORD = "TestPassword123!"
+TEST_USER_FULL_NAME = "Test User"
+TEST_USER_USERNAME = "testuser123"
 
 class APITester:
     def __init__(self):
