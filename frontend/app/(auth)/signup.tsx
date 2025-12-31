@@ -26,23 +26,53 @@ export default function SignupScreen() {
 
   const handleSignup = async () => {
     if (!fullName.trim() || !username.trim() || !email.trim() || !password.trim()) {
-      Alert.alert('Missing Info', 'Please fill in all fields');
+      Alert.alert('Missing Information', 'Please fill in all fields to create your account.');
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Weak Password', 'Password must be at least 6 characters');
+      Alert.alert('Password Too Short', 'Your password must be at least 6 characters long for security.');
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address (e.g., yourname@example.com).');
       return;
     }
 
     try {
       setLoading(true);
       await signUp(email.trim(), password, fullName.trim(), username.trim());
-      Alert.alert('Success', 'Account created successfully!', [
-        { text: 'OK', onPress: () => router.replace('/') }
-      ]);
+      
+      Alert.alert(
+        '🎉 Welcome!', 
+        'Your account has been created successfully! You can now start adding your loyalty cards.',
+        [{ 
+          text: 'Get Started', 
+          onPress: () => router.replace('/') 
+        }]
+      );
     } catch (error: any) {
-      Alert.alert('Signup Failed', error.response?.data?.detail || 'Failed to create account');
+      console.error('Signup error:', error);
+      
+      let errorMessage = 'We couldn\'t create your account. Please try again.';
+      
+      if (error.response?.data?.detail) {
+        const detail = error.response.data.detail;
+        if (detail.includes('already exists') || detail.includes('duplicate')) {
+          errorMessage = 'An account with this email or username already exists. Please try logging in instead.';
+        } else if (detail.includes('invalid')) {
+          errorMessage = 'Please check your information and try again. Make sure your email is valid.';
+        } else {
+          errorMessage = detail;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert('Could Not Create Account', errorMessage);
     } finally {
       setLoading(false);
     }
