@@ -690,7 +690,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    backgroundColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -700,16 +700,37 @@ const styles = StyleSheet.create({
     right: 24,
     zIndex: 10,
     padding: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 20,
+  },
+  zoomScrollView: {
+    flex: 1,
+    width: '100%',
+  },
+  zoomScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   zoomedImage: {
     width: '100%',
-    height: '80%',
+    height: '100%',
   },
-  zoomHintText: {
+  zoomHintContainer: {
     position: 'absolute',
     bottom: 60,
+    alignItems: 'center',
+    width: '100%',
+  },
+  zoomHintText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  zoomHintSubtext: {
+    color: '#CCCCCC',
+    fontSize: 14,
+    textAlign: 'center',
   },
 });
