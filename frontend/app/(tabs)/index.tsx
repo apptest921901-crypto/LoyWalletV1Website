@@ -264,31 +264,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    marginBottom: 16,
   },
   logoSmall: {
     width: 40,
     height: 40,
     marginRight: 12,
-    borderRadius: 20,
   },
-  headerSubtitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#8E8E93',
-    marginTop: 2,
-  },
-  title: {
-    fontSize: 34,
+  headerTitle: {
+    fontSize: 28,
     fontWeight: '700',
     color: '#000000',
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#007AFF',
+    marginTop: 2,
   },
   searchContainer: {
     flexDirection: 'row',
