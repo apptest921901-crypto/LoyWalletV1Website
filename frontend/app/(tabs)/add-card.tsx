@@ -420,4 +420,24 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
   },
+  selectedMerchantLogoContainer: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  selectedMerchantLogo: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  selectedMerchantText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#000000',
+    flex: 1,
+  },
 });
