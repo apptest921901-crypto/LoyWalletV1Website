@@ -278,7 +278,7 @@ async def create_card(card: LoyaltyCardCreate, user_id: str = Depends(verify_tok
     """Create a new loyalty card"""
     try:
         # Check if merchant exists
-        merchant_response = supabase_admin.table("merchants").select("id").eq("id", card.merchant_id).execute()
+        merchant_response = supabase_admin.table("merchants").select("merchant_id").eq("merchant_id", card.merchant_id).execute()
         if not merchant_response.data:
             raise HTTPException(status_code=404, detail="Merchant not found")
         
@@ -297,10 +297,10 @@ async def create_card(card: LoyaltyCardCreate, user_id: str = Depends(verify_tok
         
         if response.data:
             # Fetch the created card with merchant details
-            card_id = response.data[0]["id"]
+            card_id = response.data[0]["card_id"]
             card_response = supabase_admin.table("loyalty_cards").select(
-                "*, merchant:merchants(id, name, logo_url, category)"
-            ).eq("id", card_id).single().execute()
+                "*, merchant:merchants(merchant_id, name, logo_url, category)"
+            ).eq("card_id", card_id).single().execute()
             
             # Flatten merchant data
             result = card_response.data
