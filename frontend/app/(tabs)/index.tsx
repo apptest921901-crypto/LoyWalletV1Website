@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Platform,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +17,7 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { cardAPI, MerchantGroup } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+import Toast from 'react-native-toast-message';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -40,6 +42,12 @@ export default function HomeScreen() {
       setMerchants(data);
     } catch (error) {
       console.error('Error loading merchants:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to load cards',
+        text2: 'Please try again',
+        position: 'top',
+      });
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -75,6 +83,12 @@ export default function HomeScreen() {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       await cardAPI.toggleFavorite(cardId, !currentStatus);
+      Toast.show({
+        type: 'success',
+        text1: !currentStatus ? '⭐ Favorited' : 'Removed from favorites',
+        position: 'top',
+        visibilityTime: 1000,
+      });
       loadMerchants();
     } catch (error) {
       console.error('Error toggling favorite:', error);
@@ -157,6 +171,17 @@ export default function HomeScreen() {
                 onPress={() => toggleMerchant(merchant.merchant_name)}
               >
                 <View style={styles.merchantTitleContainer}>
+                  {merchant.merchant_logo_url ? (
+                    <Image 
+                      source={{ uri: merchant.merchant_logo_url }} 
+                      style={styles.merchantLogo}
+                      resizeMode="contain"
+                    />
+                  ) : (
+                    <View style={styles.merchantLogoPlaceholder}>
+                      <Ionicons name="business" size={20} color="#8E8E93" />
+                    </View>
+                  )}
                   <Text style={styles.merchantName}>{merchant.merchant_name}</Text>
                   <View style={styles.cardCountBadge}>
                     <Text style={styles.cardCountText}>{merchant.card_count}</Text>
@@ -175,7 +200,7 @@ export default function HomeScreen() {
                     <TouchableOpacity
                       key={card.id}
                       style={styles.cardTile}
-                      onPress={() => card.id && handleCardPress(card.id)}
+                      onPress={() => card.id && handleCardPress(card.id.toString())}
                     >
                       <View style={styles.cardContent}>
                         <View style={styles.cardTextContainer}>
@@ -185,7 +210,7 @@ export default function HomeScreen() {
                         <TouchableOpacity
                           onPress={(e) => {
                             e.stopPropagation();
-                            card.id && toggleFavorite(card.id, card.is_favorite);
+                            card.id && toggleFavorite(card.id.toString(), card.is_favorite);
                           }}
                           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                         >
@@ -289,11 +314,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
+  merchantLogo: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    marginRight: 12,
+    backgroundColor: '#F2F2F7',
+  },
+  merchantLogoPlaceholder: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    marginRight: 12,
+    backgroundColor: '#F2F2F7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   merchantName: {
     fontSize: 18,
     fontWeight: '600',
     color: '#000000',
     marginRight: 8,
+    flex: 1,
   },
   cardCountBadge: {
     backgroundColor: '#E5E5EA',

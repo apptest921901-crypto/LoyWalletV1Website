@@ -39,12 +39,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log('Auth state changed:', _event, session?.user?.email);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth event:', event);
       setSession(session);
       
       if (session?.user) {
-        await loadUserProfile(session.access_token);
+        // Don't wait for profile load to navigate
+        loadUserProfile(session.access_token);
       } else {
         setUser(null);
         setLoading(false);
@@ -61,23 +62,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const inAuthGroup = segments[0] === '(auth)';
 
     if (!user && !inAuthGroup) {
-      // Redirect to login if not authenticated
       router.replace('/(auth)/login');
     } else if (user && inAuthGroup) {
-      // Redirect to home if authenticated and on auth screen
       router.replace('/(tabs)');
     }
   }, [user, loading, segments]);
 
   async function loadSession() {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error('Session load error:', error);
-        setLoading(false);
-        return;
-      }
+      const { data: { session } } = await supabase.auth.getSession();
 
       if (session) {
         setSession(session);
@@ -94,12 +87,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function loadUserProfile(token: string) {
     try {
       const response = await axios.get(`${API_URL}/api/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 5000 // 5 second timeout
       });
       setUser(response.data);
     } catch (error) {
       console.error('Error loading profile:', error);
-      // If profile fails, sign out
       await supabase.auth.signOut();
       setUser(null);
     } finally {
@@ -109,8 +102,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signUp(email: string, password: string, fullName: string, username: string) {
     try {
-      setLoading(true);
-      
       const response = await axios.post(`${API_URL}/api/auth/signup`, {
         email,
         password,
@@ -119,38 +110,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (response.data.session?.access_token) {
-        // Set session in Supabase
         const { access_token, refresh_token } = response.data.session;
         await supabase.auth.setSession({ access_token, refresh_token });
         
         Toast.show({
           type: 'success',
           text1: '🎉 Welcome!',
-          text2: 'Your account has been created successfully!',
+          text2: 'Account created successfully',
           position: 'top',
-          visibilityTime: 4000,
-        });
-      } else {
-        Toast.show({
-          type: 'info',
-          text1: 'Account Created',
-          text2: 'Please sign in with your credentials',
-          position: 'top',
-          visibilityTime: 3000,
+          visibilityTime: 2000,
         });
       }
     } catch (error: any) {
       console.error('Signup error:', error);
       throw error;
-    } finally {
-      setLoading(false);
     }
   }
 
   async function signIn(email: string, password: string) {
     try {
-      setLoading(true);
-      
       const response = await axios.post(`${API_URL}/api/auth/login`, {
         email,
         password
@@ -158,56 +136,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (response.data.session?.access_token) {
         const { access_token, refresh_token } = response.data.session;
+        
+        // Set session first (this triggers auth state change)
         await supabase.auth.setSession({ access_token, refresh_token });
         
         Toast.show({
           type: 'success',
           text1: 'Welcome Back!',
-          text2: `Signed in as ${response.data.user?.email}`,
+          text2: 'Signed in successfully',
           position: 'top',
-          visibilityTime: 2000,
+          visibilityTime: 1500,
         });
       }
     } catch (error: any) {
       console.error('Login error:', error);
       throw error;
-    } finally {
-      setLoading(false);
     }
   }
 
   async function signOut() {
     try {
-      setLoading(true);
-      
-      // Sign out from Supabase
       await supabase.auth.signOut();
-      
-      // Clear local state
       setUser(null);
       setSession(null);
       
       Toast.show({
         type: 'info',
         text1: 'Signed Out',
-        text2: 'You have been logged out successfully',
+        text2: 'See you next time!',
         position: 'top',
-        visibilityTime: 2000,
+        visibilityTime: 1500,
       });
       
-      // Navigate to login
       router.replace('/(auth)/login');
     } catch (error) {
       console.error('Signout error:', error);
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'Failed to sign out. Please try again.',
+        text2: 'Failed to sign out',
         position: 'top',
-        visibilityTime: 2000,
       });
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -226,17 +195,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       Toast.show({
         type: 'success',
         text1: 'Profile Updated',
-        text2: 'Your profile has been saved successfully',
+        text2: 'Changes saved successfully',
         position: 'top',
-        visibilityTime: 2000,
+        visibilityTime: 1500,
       });
     } catch (error) {
       Toast.show({
         type: 'error',
         text1: 'Update Failed',
-        text2: 'Could not update profile. Please try again.',
+        text2: 'Could not update profile',
         position: 'top',
-        visibilityTime: 2000,
       });
       throw error;
     }
