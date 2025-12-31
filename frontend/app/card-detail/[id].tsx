@@ -411,7 +411,7 @@ export default function CardDetailScreen() {
       {/* Image Zoom Modal */}
       <Modal
         visible={imageZoomModal}
-        transparent={true}
+        transparent={false}
         animationType="fade"
         onRequestClose={() => setImageZoomModal(false)}
       >
@@ -422,12 +422,24 @@ export default function CardDetailScreen() {
           >
             <Ionicons name="close" size={32} color="#FFFFFF" />
           </TouchableOpacity>
-          <Image 
-            source={{ uri: currentImage || '' }} 
-            style={styles.zoomedImage}
-            resizeMode="contain"
-          />
-          <Text style={styles.zoomHintText}>Rotate for better scanning</Text>
+          <ScrollView
+            style={styles.zoomScrollView}
+            contentContainerStyle={styles.zoomScrollContent}
+            minimumZoomScale={1}
+            maximumZoomScale={5}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+          >
+            <Image 
+              source={{ uri: currentImage || '' }} 
+              style={styles.zoomedImage}
+              resizeMode="contain"
+            />
+          </ScrollView>
+          <View style={styles.zoomHintContainer}>
+            <Text style={styles.zoomHintText}>Pinch to zoom</Text>
+            <Text style={styles.zoomHintSubtext}>Rotate device horizontally for better scanning</Text>
+          </View>
         </View>
       </Modal>
     </SafeAreaView>
