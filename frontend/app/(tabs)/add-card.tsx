@@ -213,7 +213,7 @@ export default function AddCardScreen() {
                   style={styles.picker}
                 >
                   {merchants.map((merchant) => (
-                    <Picker.Item key={merchant.id} label={merchant.name} value={merchant.id} />
+                    <Picker.Item key={merchant.merchant_id} label={merchant.name} value={merchant.merchant_id} />
                   ))}
                 </Picker>
               </View>
