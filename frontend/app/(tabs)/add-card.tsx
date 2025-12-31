@@ -109,16 +109,17 @@ export default function AddCardScreen() {
   };
 
   const handleSave = async () => {
+    // Validation
     if (!selectedMerchantId) {
-      Alert.alert('Missing Info', 'Please select a merchant');
+      Alert.alert('Select a Merchant', 'Please choose which store or brand this loyalty card is for.');
       return;
     }
     if (!cardName.trim()) {
-      Alert.alert('Missing Info', 'Please enter the card name');
+      Alert.alert('Card Name Required', 'Please give your card a name (e.g., "Gold Member Card" or "Rewards Card").');
       return;
     }
     if (!barcode.trim()) {
-      Alert.alert('Missing Info', 'Please enter the barcode number');
+      Alert.alert('Barcode Required', 'Please enter the barcode number from your card. You\'ll need this to use your card.');
       return;
     }
 
@@ -135,15 +136,32 @@ export default function AddCardScreen() {
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       
-      setCardName('');
-      setBarcode('');
-      setNotes('');
-      setImageBase64('');
-      
-      router.push('/');
-    } catch (error) {
+      Alert.alert(
+        '✅ Card Added!',
+        'Your loyalty card has been saved successfully. You can now view it on your home screen.',
+        [{ 
+          text: 'View My Cards', 
+          onPress: () => {
+            // Reset form
+            setCardName('');
+            setBarcode('');
+            setNotes('');
+            setImageBase64('');
+            router.push('/');
+          }
+        }]
+      );
+    } catch (error: any) {
       console.error('Error saving card:', error);
-      Alert.alert('Error', 'Failed to save card. Please try again.');
+      
+      let errorMessage = 'We couldn\'t save your card. Please try again.';
+      if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert('Could Not Save Card', errorMessage);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setSaving(false);
