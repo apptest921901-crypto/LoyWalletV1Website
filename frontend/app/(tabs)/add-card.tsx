@@ -217,6 +217,19 @@ export default function AddCardScreen() {
                   ))}
                 </Picker>
               </View>
+              {/* Show merchant logo */}
+              {selectedMerchantId && merchants.find(m => m.merchant_id === selectedMerchantId)?.logo_url && (
+                <View style={styles.selectedMerchantLogoContainer}>
+                  <Image 
+                    source={{ uri: merchants.find(m => m.merchant_id === selectedMerchantId)?.logo_url }} 
+                    style={styles.selectedMerchantLogo}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.selectedMerchantText}>
+                    {merchants.find(m => m.merchant_id === selectedMerchantId)?.name}
+                  </Text>
+                </View>
+              )}
             </View>
 
             <View style={styles.inputGroup}>
