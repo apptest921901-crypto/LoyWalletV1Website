@@ -413,36 +413,33 @@ export default function CardDetailScreen() {
       {/* Image Zoom Modal */}
       <Modal
         visible={imageZoomModal}
-        transparent={false}
+        transparent={true}
         animationType="fade"
         onRequestClose={() => setImageZoomModal(false)}
       >
-        <View style={styles.modalContainer}>
-          <TouchableOpacity 
-            style={styles.modalCloseButton}
-            onPress={() => setImageZoomModal(false)}
-          >
-            <Ionicons name="close" size={32} color="#FFFFFF" />
-          </TouchableOpacity>
-          <ScrollView
-            style={styles.zoomScrollView}
-            contentContainerStyle={styles.zoomScrollContent}
-            minimumZoomScale={1}
-            maximumZoomScale={5}
-            showsHorizontalScrollIndicator={false}
-            showsVerticalScrollIndicator={false}
-          >
-            <Image 
-              source={{ uri: currentImage || '' }} 
-              style={styles.zoomedImage}
-              resizeMode="contain"
-            />
-          </ScrollView>
-          <View style={styles.zoomHintContainer}>
-            <Text style={styles.zoomHintText}>Pinch to zoom</Text>
-            <Text style={styles.zoomHintSubtext}>Rotate device horizontally for better scanning</Text>
-          </View>
-        </View>
+        <ImageViewer
+          imageUrls={currentImage ? [{ url: currentImage }] : []}
+          enableSwipeDown={true}
+          onSwipeDown={() => setImageZoomModal(false)}
+          onCancel={() => setImageZoomModal(false)}
+          backgroundColor="#000000"
+          saveToLocalByLongPress={false}
+          renderHeader={() => (
+            <TouchableOpacity 
+              style={styles.modalCloseButton}
+              onPress={() => setImageZoomModal(false)}
+            >
+              <Ionicons name="close" size={32} color="#FFFFFF" />
+            </TouchableOpacity>
+          )}
+          renderIndicator={() => <></>}
+          renderFooter={() => (
+            <View style={styles.zoomHintContainer}>
+              <Text style={styles.zoomHintText}>🔍 Pinch to zoom</Text>
+              <Text style={styles.zoomHintSubtext}>Rotate device for better view</Text>
+            </View>
+          )}
+        />
       </Modal>
     </SafeAreaView>
   );
