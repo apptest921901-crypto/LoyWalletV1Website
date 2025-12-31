@@ -210,7 +210,7 @@ async def login(credentials: UserLogin):
             raise HTTPException(status_code=401, detail="Invalid credentials")
         
         # Get user profile
-        user_profile = supabase_admin.table("users").select("*").eq("id", response.user.id).single().execute()
+        user_profile = supabase_admin.table("users").select("*").eq("user_id", response.user.id).single().execute()
         
         return {
             "message": "Login successful",
