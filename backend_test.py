@@ -421,9 +421,8 @@ class BackendTester:
             self.log_test("Toggle Favorite", False, "No test card_id available")
             return False
         
-        # Toggle to false
-        toggle_data = {"is_favorite": False}
-        success, response, status_code = self.make_request("PUT", f"/cards/{self.test_card_id}/favorite", toggle_data)
+        # Toggle to false using query parameter
+        success, response, status_code = self.make_request("PUT", f"/cards/{self.test_card_id}/favorite?is_favorite=false")
         
         if success and status_code == 200:
             try:
