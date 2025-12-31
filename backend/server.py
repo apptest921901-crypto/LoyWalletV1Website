@@ -58,7 +58,7 @@ class UserProfileUpdate(BaseModel):
     avatar_url: Optional[str] = None
 
 class Merchant(BaseModel):
-    id: Optional[int] = None
+    merchant_id: Optional[str] = None
     name: str
     description: Optional[str] = None
     logo_url: Optional[str] = None
@@ -69,9 +69,9 @@ class Merchant(BaseModel):
     updated_at: Optional[datetime] = None
 
 class LoyaltyCard(BaseModel):
-    id: Optional[int] = None
+    card_id: Optional[str] = None
     user_id: Optional[str] = None
-    merchant_id: int
+    merchant_id: str
     card_name: str
     barcode: str
     notes: Optional[str] = ""
