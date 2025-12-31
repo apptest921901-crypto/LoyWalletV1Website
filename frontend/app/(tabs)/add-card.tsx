@@ -186,7 +186,14 @@ export default function AddCardScreen() {
         style={styles.keyboardView}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Add New Card</Text>
+          <View style={styles.headerContent}>
+            <Image 
+              source={{ uri: 'https://customer-assets.emergentagent.com/job_lovaltyorganizer/artifacts/cn1jsy8n_Logo%203%20circle.png' }}
+              style={styles.logoSmall}
+              resizeMode="contain"
+            />
+            <Text style={styles.title}>Add New Card</Text>
+          </View>
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
