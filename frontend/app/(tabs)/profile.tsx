@@ -300,9 +300,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#000000',
   },
-    fontWeight: '700',
-    color: '#000000',
-  },
   editButton: {
     padding: 8,
   },
