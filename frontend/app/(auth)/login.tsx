@@ -23,16 +23,33 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Missing Info', 'Please enter email and password');
+      Alert.alert('Missing Information', 'Please enter both your email and password to sign in.');
       return;
     }
 
     try {
       setLoading(true);
       await signIn(email.trim(), password);
-      router.replace('/');
+      // Navigation is handled by AuthContext automatically
     } catch (error: any) {
-      Alert.alert('Login Failed', error.response?.data?.detail || 'Invalid email or password');
+      console.error('Login error:', error);
+      
+      let errorMessage = 'We couldn\'t sign you in. Please check your credentials and try again.';
+      
+      if (error.response?.data?.detail) {
+        const detail = error.response.data.detail;
+        if (detail.includes('Invalid') || detail.includes('credentials')) {
+          errorMessage = 'Incorrect email or password. Please try again or create a new account.';
+        } else {
+          errorMessage = detail;
+        }
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Incorrect email or password. Please try again.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert('Sign In Failed', errorMessage);
     } finally {
       setLoading(false);
     }
