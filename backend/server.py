@@ -43,7 +43,7 @@ class UserLogin(BaseModel):
     password: str
 
 class UserProfile(BaseModel):
-    id: Optional[str] = None
+    user_id: Optional[str] = None
     username: Optional[str] = None
     email: Optional[str] = None
     full_name: Optional[str] = None
