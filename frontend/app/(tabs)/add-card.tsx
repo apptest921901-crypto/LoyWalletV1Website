@@ -23,7 +23,7 @@ import { cardAPI, Merchant } from '../../utils/api';
 export default function AddCardScreen() {
   const router = useRouter();
   const [merchants, setMerchants] = useState<Merchant[]>([]);
-  const [selectedMerchantId, setSelectedMerchantId] = useState<number | null>(null);
+  const [selectedMerchantId, setSelectedMerchantId] = useState<string | null>(null);
   const [cardName, setCardName] = useState('');
   const [barcode, setBarcode] = useState('');
   const [notes, setNotes] = useState('');
@@ -40,7 +40,7 @@ export default function AddCardScreen() {
       const data = await cardAPI.getMerchants();
       setMerchants(data);
       if (data.length > 0) {
-        setSelectedMerchantId(data[0].id);
+        setSelectedMerchantId(data[0].merchant_id);
       }
     } catch (error) {
       console.error('Error loading merchants:', error);
