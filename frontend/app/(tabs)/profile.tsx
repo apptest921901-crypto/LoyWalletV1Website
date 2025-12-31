@@ -286,8 +286,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5EA',
   },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoSmall: {
+    width: 36,
+    height: 36,
+    marginRight: 12,
+  },
   title: {
-    fontSize: 34,
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#000000',
+  },
     fontWeight: '700',
     color: '#000000',
   },
