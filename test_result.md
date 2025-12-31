@@ -105,6 +105,66 @@
 user_problem_statement: "Build a mobile-first loyalty card organizer app with merchant grouping, search, favorites, card creation with image upload, and card detail editing"
 
 backend:
+  - task: "Auth Signup API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "POST /api/auth/signup tested with updated schema. Creates user with UUID user_id, handles existing users correctly by redirecting to login. Returns proper session tokens and user profile data."
+
+  - task: "Auth Login API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "POST /api/auth/login tested with updated schema. Successfully authenticates users and returns access tokens with UUID user_id in response."
+
+  - task: "Get Profile API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "GET /api/profile tested with updated schema. Returns user profile with UUID user_id, requires proper authentication token."
+
+  - task: "Update Profile API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "PUT /api/profile tested with updated schema. Successfully updates user profile fields, returns updated data with UUID user_id."
+
+  - task: "Get Merchants API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "GET /api/merchants tested with updated schema. Returns 35 merchants with UUID merchant_id and logo_url fields. Public endpoint working correctly."
+
   - task: "Create Card API"
     implemented: true
     working: true
@@ -116,6 +176,9 @@ backend:
       - working: true
         agent: "main"
         comment: "POST /api/cards endpoint created and tested with curl. Successfully creates cards with merchant_name, card_name, barcode, notes, image_base64, is_favorite"
+      - working: true
+        agent: "testing"
+        comment: "POST /api/cards tested with updated schema. Creates cards with UUID card_id, merchant_id, user_id. Returns merchant data (name, logo_url) in response. Validates merchant existence."
   
   - task: "Get Cards API"
     implemented: true
@@ -128,6 +191,9 @@ backend:
       - working: true
         agent: "main"
         comment: "GET /api/cards endpoint with search and favorites_only filters implemented"
+      - working: true
+        agent: "testing"
+        comment: "GET /api/cards tested with updated schema. Returns cards with UUID card_id, merchant_id, user_id. Includes merchant data and supports search/filter parameters."
   
   - task: "Get Single Card API"
     implemented: true
@@ -143,6 +209,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "GET /api/cards/{id} tested successfully. Returns correct card data for valid IDs, handles invalid IDs properly. Minor: Non-existent valid ObjectIds return 400 instead of 404 due to catch-all exception handler, but core functionality works correctly."
+      - working: true
+        agent: "testing"
+        comment: "GET /api/cards/{card_id} tested with updated schema. Returns card with UUID card_id, includes merchant data (name, logo_url). Proper authentication and validation."
   
   - task: "Update Card API"
     implemented: true
@@ -158,6 +227,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "PUT /api/cards/{id} tested successfully. Supports partial updates of single and multiple fields. Properly validates card existence and handles invalid IDs. All update operations working correctly."
+      - working: true
+        agent: "testing"
+        comment: "PUT /api/cards/{card_id} tested with updated schema. Supports updating all fields including image_base64 and merchant_id. Returns updated card with merchant data."
   
   - task: "Delete Card API"
     implemented: true
@@ -173,6 +245,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "DELETE /api/cards/{id} tested successfully. Properly deletes existing cards and handles invalid IDs. Minor: Non-existent valid ObjectIds return 400 instead of 404 due to catch-all exception handler, but core functionality works correctly."
+      - working: true
+        agent: "testing"
+        comment: "DELETE /api/cards/{card_id} tested with updated schema. Successfully deletes cards using UUID card_id, proper user authentication and validation."
   
   - task: "Toggle Favorite API"
     implemented: true
@@ -188,6 +263,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "PUT /api/cards/{id}/favorite tested successfully. Correctly toggles favorite status (true/false), validates card existence, and handles invalid IDs. All favorite operations working correctly."
+      - working: true
+        agent: "testing"
+        comment: "PUT /api/cards/{card_id}/favorite tested with updated schema. Successfully toggles favorite status using UUID card_id and query parameter is_favorite."
   
   - task: "Get Merchants Grouped API"
     implemented: true
@@ -200,6 +278,9 @@ backend:
       - working: true
         agent: "main"
         comment: "GET /api/merchants endpoint tested with curl. Successfully groups cards by merchant_name with counts"
+      - working: true
+        agent: "testing"
+        comment: "GET /api/merchants-grouped tested with updated schema. Returns merchant groups with UUID merchant_id, card_count, and cards array. Proper authentication required."
   
   - task: "Get Statistics API"
     implemented: true
@@ -212,6 +293,9 @@ backend:
       - working: true
         agent: "main"
         comment: "GET /api/stats endpoint tested with curl. Returns total_cards, favorite_cards, total_merchants"
+      - working: true
+        agent: "testing"
+        comment: "GET /api/stats tested with updated schema. Returns statistics (total_cards, favorite_cards, total_merchants) with proper authentication and UUID-based counting."
 
 frontend:
   - task: "Navigation Structure"
