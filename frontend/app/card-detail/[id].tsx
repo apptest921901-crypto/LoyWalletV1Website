@@ -133,18 +133,29 @@ export default function CardDetailScreen() {
   };
 
   const handleDelete = () => {
-    Alert.alert('Delete Card', 'Remove this card?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: async () => {
-        try { 
-          if (card?.card_id) { 
-            await cardAPI.deleteCard(card.card_id); 
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            router.replace('/'); 
+    Alert.alert(
+      'Delete Card', 
+      'Are you sure you want to remove this card? This action cannot be undone.', 
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive', 
+          onPress: async () => {
+            try { 
+              if (card?.card_id) { 
+                await cardAPI.deleteCard(card.card_id); 
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                router.replace('/'); 
+              } 
+            } catch (e) {
+              console.error('Delete error:', e);
+              Toast.show({ type: 'error', text1: 'Failed to delete card' });
+            }
           } 
-        } catch (e) {}
-      }}
-    ]);
+        }
+      ]
+    );
   };
 
   const toggleFavorite = async () => {
