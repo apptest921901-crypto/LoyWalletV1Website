@@ -3,44 +3,42 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
-  ActivityIndicator,
   TouchableOpacity,
-  TextInput,
+  ScrollView,
+  Image,
+  ActivityIndicator,
   Alert,
+  Modal,
+  TextInput,
   KeyboardAvoidingView,
   Platform,
-  Image,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { cardAPI, Stats } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+import { cardAPI, Stats } from '../../utils/api';
+import * as Haptics from 'expo-haptics';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function ProfileScreen() {
-  const router = useRouter();
   const { user, signOut, updateProfile } = useAuth();
+  const insets = useSafeAreaInsets();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
   
-  const [fullName, setFullName] = useState('');
-  const [username, setUsername] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editedName, setEditedName] = useState(user?.full_name || '');
+  const [editedUsername, setEditedUsername] = useState(user?.username || '');
+  const [editedAvatar, setEditedAvatar] = useState(user?.avatar_url || '');
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     loadStats();
-    if (user) {
-      setFullName(user.full_name || '');
-      setUsername(user.username || '');
-      setPhoneNumber(user.phone_number || '');
-    }
-  }, [user]);
+  }, []);
 
   const loadStats = async () => {
     try {
+      setLoading(true);
       const data = await cardAPI.getStats();
       setStats(data);
     } catch (error) {
@@ -50,425 +48,206 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleSaveProfile = async () => {
+  const pickImage = async () => {
+    const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!granted) {
+      Alert.alert('Permission Required', 'We need photo library access to change your avatar.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      setEditedAvatar(`data:image/jpeg;base64,${result.assets[0].base64}`);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!editedName || !editedUsername) {
+      Alert.alert('Missing Info', 'Full Name and Username are required.');
+      return;
+    }
+
     try {
-      setSaving(true);
+      setIsUpdating(true);
       await updateProfile({
-        full_name: fullName.trim() || undefined,
-        username: username.trim() || undefined,
-        phone_number: phoneNumber.trim() || undefined,
+        full_name: editedName,
+        username: editedUsername,
+        avatar_url: editedAvatar
       });
-      setEditing(false);
-      Alert.alert('Success', 'Profile updated successfully');
+      
+      // EXPERT UX FIX: Success feedback for Profile Update
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert('✅ Success', 'Your profile has been updated successfully!');
+      
+      setEditModalVisible(false);
     } catch (error) {
-      console.error('Error updating profile:', error);
-      Alert.alert('Error', 'Failed to update profile');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert('Update Failed', 'Could not save changes. Please try again.');
     } finally {
-      setSaving(false);
+      setIsUpdating(false);
     }
   };
 
   const handleLogout = () => {
     Alert.alert(
       'Logout',
-      'Are you sure you want to logout?',
+      'Are you sure you want to log out of LoyWallet?',
       [
         { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            await signOut();
-            router.replace('/(auth)/login');
-          },
-        },
+        { text: 'Logout', style: 'destructive', onPress: () => signOut() },
       ]
     );
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 100 }]}>
         <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <Image 
-              source={{ uri: 'https://customer-assets.emergentagent.com/job_lovaltyorganizer/artifacts/cn1jsy8n_Logo%203%20circle.png' }}
-              style={styles.logoSmall}
-              resizeMode="contain"
-            />
-            <Text style={styles.title}>Profile</Text>
-          </View>
-          {!editing && (
-            <TouchableOpacity onPress={() => setEditing(true)} style={styles.editButton}>
-              <Ionicons name="create-outline" size={24} color="#007AFF" />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-          {/* Avatar Section */}
-          <View style={styles.avatarSection}>
-            <View style={styles.avatar}>
-              <Ionicons name="person" size={64} color="#007AFF" />
-            </View>
-            {!editing && (
-              <>
-                <Text style={styles.userName}>{user?.full_name || 'User'}</Text>
-                <Text style={styles.userEmail}>{user?.email || ''}</Text>
-              </>
-            )}
-          </View>
-
-          {/* Edit Form */}
-          {editing && (
-            <View style={styles.editForm}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Full Name</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your full name"
-                  placeholderTextColor="#8E8E93"
-                  value={fullName}
-                  onChangeText={setFullName}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Username</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your username"
-                  placeholderTextColor="#8E8E93"
-                  value={username}
-                  onChangeText={setUsername}
-                  autoCapitalize="none"
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Phone Number</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your phone number"
-                  placeholderTextColor="#8E8E93"
-                  value={phoneNumber}
-                  onChangeText={setPhoneNumber}
-                  keyboardType="phone-pad"
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Email (Cannot be changed)</Text>
-                <TextInput
-                  style={[styles.input, styles.inputDisabled]}
-                  value={user?.email || ''}
-                  editable={false}
-                />
-              </View>
-
-              <View style={styles.buttonRow}>
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.cancelButton]}
-                  onPress={() => {
-                    setFullName(user?.full_name || '');
-                    setUsername(user?.username || '');
-                    setPhoneNumber(user?.phone_number || '');
-                    setEditing(false);
-                  }}
-                >
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.saveButton, saving && styles.saveButtonDisabled]}
-                  onPress={handleSaveProfile}
-                  disabled={saving}
-                >
-                  {saving ? (
-                    <ActivityIndicator color="#FFFFFF" />
-                  ) : (
-                    <Text style={styles.saveButtonText}>Save</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-
-          {/* Stats Section */}
-          {!editing && (
-            <>
-              <View style={styles.statsSection}>
-                <Text style={styles.sectionTitle}>Your Cards</Text>
-                
-                <View style={styles.statsGrid}>
-                  <View style={styles.statCard}>
-                    <View style={styles.statIconContainer}>
-                      <Ionicons name="card" size={32} color="#007AFF" />
-                    </View>
-                    <Text style={styles.statValue}>{stats?.total_cards || 0}</Text>
-                    <Text style={styles.statLabel}>Total Cards</Text>
-                  </View>
-
-                  <View style={styles.statCard}>
-                    <View style={styles.statIconContainer}>
-                      <Ionicons name="star" size={32} color="#FFD700" />
-                    </View>
-                    <Text style={styles.statValue}>{stats?.favorite_cards || 0}</Text>
-                    <Text style={styles.statLabel}>Favorites</Text>
-                  </View>
-
-                  <View style={styles.statCard}>
-                    <View style={styles.statIconContainer}>
-                      <Ionicons name="business" size={32} color="#34C759" />
-                    </View>
-                    <Text style={styles.statValue}>{stats?.total_merchants || 0}</Text>
-                    <Text style={styles.statLabel}>Merchants</Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* Logout Button */}
-              <View style={styles.logoutSection}>
-                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                  <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
-                  <Text style={styles.logoutText}>Logout</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Info Section */}
-              <View style={styles.infoSection}>
-                <Text style={styles.infoTitle}>About LoyaltyApp</Text>
-                <Text style={styles.infoText}>
-                  Keep all your loyalty cards organized in one place. Never miss out on rewards again!
+          <View style={styles.avatarContainer}>
+            {user?.avatar_url ? (
+              <Image source={{ uri: user.avatar_url }} style={styles.avatar} />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Text style={styles.avatarText}>
+                  {user?.full_name?.charAt(0) || 'U'}
                 </Text>
               </View>
-            </>
-          )}
-        </ScrollView>
-      </KeyboardAvoidingView>
+            )}
+          </View>
+          <Text style={styles.userName}>{user?.full_name || 'User'}</Text>
+          <Text style={styles.userEmail}>{user?.email}</Text>
+        </View>
+
+        <View style={styles.statsGrid}>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{stats?.total_cards || 0}</Text>
+            <Text style={styles.statLabel}>Cards</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{stats?.favorite_cards || 0}</Text>
+            <Text style={styles.statLabel}>Favorites</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{stats?.total_merchants || 0}</Text>
+            <Text style={styles.statLabel}>Merchants</Text>
+          </View>
+        </View>
+
+        <View style={styles.menu}>
+          <Text style={styles.menuTitle}>Settings</Text>
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => {
+              setEditedName(user?.full_name || '');
+              setEditedUsername(user?.username || '');
+              setEditedAvatar(user?.avatar_url || '');
+              setEditModalVisible(true);
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }}
+          >
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="person-outline" size={22} color="#007AFF" />
+              <Text style={styles.menuItemText}>Edit Profile</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="log-out-outline" size={22} color="#FF3B30" />
+              <Text style={[styles.menuItemText, { color: '#FF3B30' }]}>Logout</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.footer}>
+          <Image 
+            source={{ uri: 'https://customer-assets.emergentagent.com/job_lovaltyorganizer/artifacts/cn1jsy8n_Logo%203%20circle.png' }}
+            style={styles.logoSmall}
+            resizeMode="contain"
+          />
+          <Text style={styles.versionText}>LoyWallet v1.0.0</Text>
+        </View>
+      </ScrollView>
+
+      <Modal visible={editModalVisible} animationType="slide" transparent={true} onRequestClose={() => setEditModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Edit Profile</Text>
+              <TouchableOpacity onPress={() => setEditModalVisible(false)}><Ionicons name="close" size={28} color="#000" /></TouchableOpacity>
+            </View>
+            <ScrollView contentContainerStyle={styles.modalForm}>
+              <TouchableOpacity style={styles.avatarPicker} onPress={pickImage}>
+                <View style={styles.avatarPreviewContainer}>
+                  {editedAvatar ? <Image source={{ uri: editedAvatar }} style={styles.avatarPreview} /> : (
+                    <View style={[styles.avatarPreview, { backgroundColor: '#F2F2F7', alignItems: 'center', justifyContent: 'center' }]}>
+                      <Ionicons name="person" size={40} color="#8E8E93" />
+                    </View>
+                  )}
+                  <View style={styles.cameraBadge}><Ionicons name="camera" size={18} color="#FFF" /></View>
+                </View>
+                <Text style={styles.avatarPickerText}>Change Photo</Text>
+              </TouchableOpacity>
+              <View style={styles.inputGroup}><Text style={styles.label}>Email (Read Only)</Text><TextInput style={[styles.input, styles.disabledInput]} value={user?.email} editable={false} /></View>
+              <View style={styles.inputGroup}><Text style={styles.label}>Full Name</Text><TextInput style={styles.input} value={editedName} onChangeText={setEditedName} placeholder="John Doe" /></View>
+              <View style={styles.inputGroup}><Text style={styles.label}>Username</Text><TextInput style={styles.input} value={editedUsername} onChangeText={setEditedUsername} autoCapitalize="none" placeholder="johndoe" /></View>
+              <TouchableOpacity style={[styles.saveButton, isUpdating && styles.buttonDisabled]} onPress={handleUpdate} disabled={isUpdating}>
+                {isUpdating ? <ActivityIndicator color="#FFF" /> : <Text style={styles.saveButtonText}>Save Changes</Text>}
+              </TouchableOpacity>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F2F2F7',
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logoSmall: {
-    width: 36,
-    height: 36,
-    marginRight: 12,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#000000',
-  },
-  editButton: {
-    padding: 8,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 100,
-  },
-  avatarSection: {
-    alignItems: 'center',
-    paddingVertical: 32,
-    backgroundColor: '#FFFFFF',
-    marginBottom: 16,
-  },
-  avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#F2F2F7',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  userName: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 4,
-  },
-  userEmail: {
-    fontSize: 16,
-    color: '#8E8E93',
-  },
-  editForm: {
-    paddingHorizontal: 24,
-    paddingVertical: 24,
-    backgroundColor: '#FFFFFF',
-    marginBottom: 16,
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: '#F2F2F7',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: '#000000',
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-  },
-  inputDisabled: {
-    backgroundColor: '#E5E5EA',
-    color: '#8E8E93',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
-  },
-  actionButton: {
-    flex: 1,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#F2F2F7',
-  },
-  cancelButtonText: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#8E8E93',
-  },
-  saveButton: {
-    backgroundColor: '#007AFF',
-  },
-  saveButtonDisabled: {
-    backgroundColor: '#8E8E93',
-  },
-  saveButtonText: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  statsSection: {
-    paddingHorizontal: 24,
-    paddingVertical: 24,
-    backgroundColor: '#FFFFFF',
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 16,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  statCard: {
-    flex: 1,
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#F2F2F7',
-    borderRadius: 12,
-    marginHorizontal: 4,
-  },
-  statIconContainer: {
-    marginBottom: 8,
-  },
-  statValue: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#000000',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 13,
-    color: '#8E8E93',
-    textAlign: 'center',
-  },
-  logoutSection: {
-    paddingHorizontal: 24,
-    marginBottom: 16,
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 16,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  logoutText: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#FF3B30',
-    marginLeft: 8,
-  },
-  infoSection: {
-    paddingHorizontal: 24,
-    paddingVertical: 24,
-    backgroundColor: '#FFFFFF',
-  },
-  infoTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 12,
-  },
-  infoText: {
-    fontSize: 16,
-    color: '#8E8E93',
-    lineHeight: 24,
-  },
+  container: { flex: 1, backgroundColor: '#F2F2F7' },
+  scrollContent: { paddingBottom: 40 },
+  header: { alignItems: 'center', paddingVertical: 32, backgroundColor: '#FFFFFF' },
+  avatarContainer: { marginBottom: 16 },
+  avatar: { width: 100, height: 100, borderRadius: 50 },
+  avatarPlaceholder: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#007AFF', alignItems: 'center', justifyContent: 'center' },
+  avatarText: { fontSize: 40, color: '#FFFFFF', fontWeight: '600' },
+  userName: { fontSize: 24, fontWeight: '700', color: '#000000' },
+  userEmail: { fontSize: 16, color: '#8E8E93', marginTop: 4 },
+  statsGrid: { flexDirection: 'row', padding: 16, gap: 12 },
+  statCard: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, alignItems: 'center', elevation: 2 },
+  statNumber: { fontSize: 20, fontWeight: '700', color: '#007AFF' },
+  statLabel: { fontSize: 12, color: '#8E8E93', marginTop: 4 },
+  menu: { marginTop: 24, backgroundColor: '#FFFFFF' },
+  menuTitle: { fontSize: 13, fontWeight: '600', color: '#8E8E93', textTransform: 'uppercase', padding: 16 },
+  menuItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderBottomWidth: 1, borderBottomColor: '#F2F2F7' },
+  menuItemLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  menuItemText: { fontSize: 17 },
+  footer: { marginTop: 40, alignItems: 'center', gap: 8 },
+  logoSmall: { width: 48, height: 48, opacity: 0.8 },
+  versionText: { fontSize: 14, color: '#C7C7CC', fontWeight: '600', marginBottom: 20 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalContent: { backgroundColor: '#FFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, height: '85%' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24, borderBottomWidth: 1, borderBottomColor: '#F2F2F7' },
+  modalTitle: { fontSize: 20, fontWeight: '700' },
+  modalForm: { padding: 24, gap: 20, paddingBottom: 60 },
+  avatarPicker: { alignItems: 'center', marginBottom: 10 },
+  avatarPreviewContainer: { position: 'relative' },
+  avatarPreview: { width: 100, height: 100, borderRadius: 50 },
+  cameraBadge: { position: 'absolute', right: 0, bottom: 0, backgroundColor: '#007AFF', width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: '#FFF' },
+  avatarPickerText: { marginTop: 12, color: '#007AFF', fontWeight: '600' },
+  inputGroup: { gap: 8 },
+  label: { fontSize: 14, fontWeight: '600', color: '#8E8E93' },
+  input: { backgroundColor: '#F2F2F7', padding: 16, borderRadius: 12, fontSize: 16, borderWidth: 1, borderColor: '#E5E5EA' },
+  disabledInput: { color: '#8E8E93', backgroundColor: '#F9F9F9' },
+  saveButton: { backgroundColor: '#007AFF', padding: 18, borderRadius: 16, alignItems: 'center', marginTop: 10 },
+  saveButtonText: { color: '#FFF', fontSize: 17, fontWeight: '700' },
+  buttonDisabled: { opacity: 0.6 }
 });

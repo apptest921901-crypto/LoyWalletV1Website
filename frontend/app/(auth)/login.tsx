@@ -1,234 +1,150 @@
 import React, { useState } from 'react';
 import {
+  StyleSheet,
   View,
   Text,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   ActivityIndicator,
+  Alert,
   Image,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
-import Toast from 'react-native-toast-message';
+import { Ionicons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 
 export default function LoginScreen() {
-  const router = useRouter();
-  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const { signIn } = useAuth();
+  const router = useRouter();
 
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      Toast.show({
-        type: 'error',
-        text1: 'Missing Information',
-        text2: 'Please enter both your email and password',
-        position: 'top',
-      });
+    if (!email || !password) {
+      Alert.alert('Missing Info', 'Please enter both email and password.');
       return;
     }
 
+    setIsLoading(true);
     try {
-      setLoading(true);
-      await signIn(email.trim(), password);
+      await signIn(email, password);
     } catch (error: any) {
-      let errorMessage = 'Please check your credentials and try again';
+      // EXPERT UX FIX: Handle the "Email not confirmed" case specifically
+      const detail = error.response?.data?.detail;
+      const message = detail || 'Invalid credentials. Please try again.';
       
-      if (error.response?.data?.detail) {
-        const detail = error.response.data.detail;
-        if (detail.includes('Invalid') || detail.includes('credentials')) {
-          errorMessage = 'Incorrect email or password';
-        } else {
-          errorMessage = detail;
-        }
-      } else if (error.response?.status === 401) {
-        errorMessage = 'Incorrect email or password';
-      }
-      
-      Toast.show({
-        type: 'error',
-        text1: 'Sign In Failed',
-        text2: errorMessage,
-        position: 'top',
-        visibilityTime: 3000,
-      });
+      Alert.alert('Access Denied', message);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
-        <View style={styles.content}>
-          {/* Logo Section */}
-          <View style={styles.logoContainer}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <StatusBar style="dark" />
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <View style={styles.header}>
+          <View style={styles.logoWrapper}>
             <Image 
               source={{ uri: 'https://customer-assets.emergentagent.com/job_lovaltyorganizer/artifacts/cn1jsy8n_Logo%203%20circle.png' }}
               style={styles.logo}
               resizeMode="contain"
             />
-            <Text style={styles.appName}>LoyWallet</Text>
-            <Text style={styles.tagline}>Your Cards, Your Way</Text>
-            <Text style={styles.subTagline}>Digitize. Organize. Simplify.</Text>
           </View>
+          <Text style={styles.brandName}>LoyWallet</Text>
+          <Text style={styles.tagline}>Open. Scan. <Text style={styles.winText}>Win.</Text></Text>
+          <Text style={styles.instruction}>Sign in your wallet to manage all your loyalty cards</Text>
+        </View>
 
-          <View style={styles.form}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email</Text>
+        <View style={styles.form}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Email Address</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons name="mail" size={20} color="#007AFF" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="your@email.com"
-                placeholderTextColor="#8E8E93"
+                placeholder="hello@loywallet.com"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                editable={!loading}
               />
             </View>
+          </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Password</Text>
+          <View style={styles.inputGroup}>
+            <View style={styles.passwordHeader}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')}>
+                <Text style={styles.forgotText}>Forgot?</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.inputContainer}>
+              <Ionicons name="lock-closed" size={20} color="#007AFF" style={styles.inputIcon} />
               <TextInput
-                style={styles.input}
-                placeholder="Enter your password"
-                placeholderTextColor="#8E8E93"
+                style={[styles.input, { flex: 1 }]}
+                placeholder="••••••••"
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry
-                editable={!loading}
+                secureTextEntry={!showPassword}
               />
-            </View>
-
-            <TouchableOpacity
-              style={[styles.loginButton, loading && styles.loginButtonDisabled]}
-              onPress={handleLogin}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <Text style={styles.loginButtonText}>Sign In</Text>
-              )}
-            </TouchableOpacity>
-
-            <View style={styles.signupContainer}>
-              <Text style={styles.signupText}>Don't have an account? </Text>
-              <TouchableOpacity onPress={() => router.push('/(auth)/signup')} disabled={loading}>
-                <Text style={styles.signupLink}>Sign Up</Text>
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <Ionicons name={showPassword ? "eye-off" : "eye"} size={22} color="#8E8E93" />
               </TouchableOpacity>
             </View>
           </View>
+
+          <TouchableOpacity 
+            style={[styles.loginButton, isLoading && styles.buttonDisabled]} 
+            onPress={handleLogin}
+            disabled={isLoading}
+          >
+            {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.loginButtonText}>Enter Wallet</Text>}
+          </TouchableOpacity>
+
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>New to LoyWallet? </Text>
+            <TouchableOpacity onPress={() => router.push('/(auth)/signup')}>
+              <Text style={styles.signupLink}>Create Account</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F2F2F7',
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 16,
-  },
-  appName: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: '#000000',
-    marginBottom: 8,
-    letterSpacing: -0.5,
-  },
-  tagline: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#007AFF',
-    marginBottom: 4,
-  },
-  subTagline: {
-    fontSize: 14,
-    color: '#8E8E93',
-    fontStyle: 'italic',
-  },
-  form: {
-    flex: 1,
-  },
-  inputGroup: {
-    marginBottom: 24,
-  },
-  label: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    fontSize: 16,
-    color: '#000000',
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-  },
-  loginButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-    shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  loginButtonDisabled: {
-    backgroundColor: '#8E8E93',
-  },
-  loginButtonText: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  signupContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 24,
-  },
-  signupText: {
-    fontSize: 15,
-    color: '#8E8E93',
-  },
-  signupLink: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#007AFF',
-  },
+  container: { flexGrow: 1, paddingHorizontal: 32, backgroundColor: '#FFFFFF', paddingTop: 60, paddingBottom: 40 },
+  header: { alignItems: 'center', marginBottom: 48 },
+  logoWrapper: { width: 90, height: 90, borderRadius: 24, backgroundColor: '#F0F7FF', justifyContent: 'center', alignItems: 'center', marginBottom: 20, elevation: 5 },
+  logo: { width: 60, height: 60 },
+  brandName: { fontSize: 34, fontWeight: '800', color: '#1A1A1A' },
+  tagline: { fontSize: 18, fontWeight: '600', color: '#4A4A4A', marginTop: 4, letterSpacing: 1, textTransform: 'uppercase' },
+  winText: { color: '#007AFF' },
+  instruction: { fontSize: 15, color: '#8E8E93', textAlign: 'center', marginTop: 16, lineHeight: 22 },
+  form: { width: '100%' },
+  inputGroup: { marginBottom: 24 },
+  passwordHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  inputLabel: { fontSize: 14, fontWeight: '700', color: '#1A1A1A', textTransform: 'uppercase' },
+  forgotText: { fontSize: 14, color: '#007AFF', fontWeight: '700' },
+  inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9F9F9', borderRadius: 16, paddingHorizontal: 16, height: 60, borderWidth: 1, borderColor: '#F0F0F0' },
+  inputIcon: { marginRight: 12 },
+  input: { flex: 1, fontSize: 16, color: '#1A1A1A' },
+  loginButton: { backgroundColor: '#007AFF', height: 64, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginTop: 16, elevation: 8 },
+  loginButtonText: { color: '#FFFFFF', fontSize: 18, fontWeight: '700' },
+  footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 32 },
+  footerText: { color: '#8E8E93', fontSize: 16 },
+  signupLink: { color: '#007AFF', fontSize: 16, fontWeight: '700' },
+  buttonDisabled: { backgroundColor: '#A0CFFF' },
 });

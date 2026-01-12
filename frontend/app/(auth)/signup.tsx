@@ -1,258 +1,182 @@
 import React, { useState } from 'react';
 import {
+  StyleSheet,
   View,
   Text,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
   ScrollView,
+  ActivityIndicator,
+  Alert,
+  Image,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
-import Toast from 'react-native-toast-message';
+import { Ionicons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 
 export default function SignupScreen() {
-  const router = useRouter();
-  const { signUp } = useAuth();
-  const [fullName, setFullName] = useState('');
-  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const { signUp } = useAuth();
+  const router = useRouter();
 
   const handleSignup = async () => {
-    if (!fullName.trim() || !username.trim() || !email.trim() || !password.trim()) {
-      Toast.show({
-        type: 'error',
-        text1: 'Missing Information',
-        text2: 'Please fill in all fields to create your account',
-        position: 'top',
-      });
+    if (!email || !password || !fullName || !username) {
+      Alert.alert('Missing Info', 'Please fill in all fields to create your wallet.');
       return;
     }
 
     if (password.length < 6) {
-      Toast.show({
-        type: 'error',
-        text1: 'Password Too Short',
-        text2: 'Your password must be at least 6 characters long',
-        position: 'top',
-      });
+      Alert.alert('Security', 'Password must be at least 6 characters.');
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      Toast.show({
-        type: 'error',
-        text1: 'Invalid Email',
-        text2: 'Please enter a valid email address',
-        position: 'top',
-      });
-      return;
-    }
-
+    setIsLoading(true);
     try {
-      setLoading(true);
-      await signUp(email.trim(), password, fullName.trim(), username.trim());
+      await signUp(email, password, fullName, username);
+      
+      // EXPERT UX FIX: Explicit success feedback for Email Confirmation
+      Alert.alert(
+        '🎉 Account Created!',
+        'Please check your email inbox to verify your account. You can log in after confirmation.',
+        [{ text: 'Go to Login', onPress: () => router.replace('/(auth)/login') }]
+      );
     } catch (error: any) {
-      let errorMessage = 'We couldn\'t create your account. Please try again.';
-      
-      if (error.response?.data?.detail) {
-        const detail = error.response.data.detail;
-        if (detail.includes('already exists') || detail.includes('duplicate') || detail.includes('already registered')) {
-          errorMessage = 'This email or username is already taken';
-        } else {
-          errorMessage = detail;
-        }
-      }
-      
-      Toast.show({
-        type: 'error',
-        text1: 'Signup Failed',
-        text2: errorMessage,
-        position: 'top',
-        visibilityTime: 4000,
-      });
+      const message = error.response?.data?.detail || 'Could not create account. Please try again.';
+      Alert.alert('Signup Failed', message);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Sign up to get started</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <StatusBar style="dark" />
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <View style={styles.header}>
+          <View style={styles.logoWrapper}>
+            <Image 
+              source={{ uri: 'https://customer-assets.emergentagent.com/job_lovaltyorganizer/artifacts/cn1jsy8n_Logo%203%20circle.png' }}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
+          <Text style={styles.brandName}>LoyWallet</Text>
+          <Text style={styles.tagline}>Open. Scan. <Text style={styles.winText}>Win.</Text></Text>
+          <Text style={styles.instruction}>Create your wallet to manage all your loyalty cards</Text>
+        </View>
 
-          <View style={styles.form}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Full Name *</Text>
+        <View style={styles.form}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Full Name</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons name="person" size={20} color="#007AFF" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="John Doe"
-                placeholderTextColor="#8E8E93"
                 value={fullName}
                 onChangeText={setFullName}
-                editable={!loading}
+                autoCapitalize="words"
               />
             </View>
+          </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Username *</Text>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Username</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons name="at" size={20} color="#007AFF" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="johndoe"
-                placeholderTextColor="#8E8E93"
                 value={username}
                 onChangeText={setUsername}
                 autoCapitalize="none"
-                editable={!loading}
               />
             </View>
+          </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email *</Text>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Email Address</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons name="mail" size={20} color="#007AFF" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="your@email.com"
-                placeholderTextColor="#8E8E93"
+                placeholder="hello@loywallet.com"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                editable={!loading}
               />
             </View>
+          </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Password *</Text>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Password</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons name="lock-closed" size={20} color="#007AFF" style={styles.inputIcon} />
               <TextInput
-                style={styles.input}
-                placeholder="Min. 6 characters"
-                placeholderTextColor="#8E8E93"
+                style={[styles.input, { flex: 1 }]}
+                placeholder="••••••••"
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry
-                editable={!loading}
+                secureTextEntry={!showPassword}
               />
-            </View>
-
-            <TouchableOpacity
-              style={[styles.signupButton, loading && styles.signupButtonDisabled]}
-              onPress={handleSignup}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <Text style={styles.signupButtonText}>Create Account</Text>
-              )}
-            </TouchableOpacity>
-
-            <View style={styles.loginContainer}>
-              <Text style={styles.loginText}>Already have an account? </Text>
-              <TouchableOpacity onPress={() => router.push('/(auth)/login')} disabled={loading}>
-                <Text style={styles.loginLink}>Sign In</Text>
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <Ionicons name={showPassword ? "eye-off" : "eye"} size={22} color="#8E8E93" />
               </TouchableOpacity>
             </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+          <TouchableOpacity 
+            style={[styles.signupButton, isLoading && styles.buttonDisabled]} 
+            onPress={handleSignup}
+            disabled={isLoading}
+          >
+            {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.signupButtonText}>Create Account</Text>}
+          </TouchableOpacity>
+
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Already have a wallet? </Text>
+            <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
+              <Text style={styles.loginLink}>Login</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F2F2F7',
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  content: {
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 40,
-  },
-  title: {
-    fontSize: 34,
-    fontWeight: '700',
-    color: '#000000',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 17,
-    color: '#8E8E93',
-    marginBottom: 40,
-  },
-  form: {
-    flex: 1,
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    fontSize: 16,
-    color: '#000000',
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-  },
-  signupButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-    shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  signupButtonDisabled: {
-    backgroundColor: '#8E8E93',
-  },
-  signupButtonText: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  loginContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 24,
-  },
-  loginText: {
-    fontSize: 15,
-    color: '#8E8E93',
-  },
-  loginLink: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#007AFF',
-  },
+  container: { flexGrow: 1, paddingHorizontal: 32, backgroundColor: '#FFFFFF', paddingTop: 40, paddingBottom: 40 },
+  header: { alignItems: 'center', marginBottom: 32 },
+  logoWrapper: { width: 80, height: 80, borderRadius: 20, backgroundColor: '#F0F7FF', justifyContent: 'center', alignItems: 'center', marginBottom: 16, elevation: 4 },
+  logo: { width: 50, height: 50 },
+  brandName: { fontSize: 30, fontWeight: '800', color: '#1A1A1A' },
+  tagline: { fontSize: 16, fontWeight: '600', color: '#4A4A4A', marginTop: 4, letterSpacing: 1, textTransform: 'uppercase' },
+  winText: { color: '#007AFF' },
+  instruction: { fontSize: 14, color: '#8E8E93', textAlign: 'center', marginTop: 12, lineHeight: 20 },
+  form: { width: '100%' },
+  inputGroup: { marginBottom: 16 },
+  inputLabel: { fontSize: 13, fontWeight: '700', color: '#1A1A1A', marginBottom: 8, textTransform: 'uppercase' },
+  inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9F9F9', borderRadius: 14, paddingHorizontal: 16, height: 56, borderWidth: 1, borderColor: '#F0F0F0' },
+  inputIcon: { marginRight: 12 },
+  input: { flex: 1, fontSize: 16, color: '#1A1A1A' },
+  signupButton: { backgroundColor: '#007AFF', height: 60, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginTop: 12, elevation: 6 },
+  signupButtonText: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
+  footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 24 },
+  footerText: { color: '#8E8E93', fontSize: 15 },
+  loginLink: { color: '#007AFF', fontSize: 15, fontWeight: '700' },
+  buttonDisabled: { backgroundColor: '#A0CFFF' },
 });
