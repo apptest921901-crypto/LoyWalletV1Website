@@ -35,22 +35,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function initialize() {
       try {
+        console.log('AuthContext: Fetching session...');
+        // We use a timeout so Render's "cold start" doesn't freeze the app UI
         const { data: { session: initialSession } } = await supabase.auth.getSession();
+        
         if (initialSession) {
+          console.log('AuthContext: Session found');
           setSession(initialSession);
           setApiToken(initialSession.access_token);
           
           try {
+            // Fetch profile but don't let a failure here block the app
             const res = await api.get('profile');
             setUser(res.data);
           } catch (profileErr) {
-            console.warn('Could not load profile on init', profileErr);
+            console.warn('AuthContext: Profile fetch failed (Render might be sleeping)', profileErr);
           }
         }
       } catch (e) {
-        console.warn('Initialization failed', e);
+        console.error('AuthContext: Init error', e);
       } finally {
         setLoading(false);
+        console.log('AuthContext: Loading complete');
       }
     }
     initialize();
