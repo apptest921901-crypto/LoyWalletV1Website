@@ -2,6 +2,7 @@
   "expo": {
     "name": "LoyWalletV1",
     "slug": "loywalletv1",
+    "owner": "apptest921901",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -37,6 +38,18 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2fe47932-2d8d-4fcb-b893-57201b3f3ab7"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/2fe47932-2d8d-4fcb-b893-57201b3f3ab7"
     }
   }
 }

@@ -21,9 +21,10 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const { signIn } = useAuth();
+  const { signIn, signInWithGoogle } = useAuth();
   const router = useRouter();
 
   const handleLogin = async () => {
@@ -36,13 +37,22 @@ export default function LoginScreen() {
     try {
       await signIn(email, password);
     } catch (error: any) {
-      // EXPERT UX FIX: Handle the "Email not confirmed" case specifically
       const detail = error.response?.data?.detail;
       const message = detail || 'Invalid credentials. Please try again.';
-      
       Alert.alert('Access Denied', message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      // Error handled in AuthContext
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -63,7 +73,6 @@ export default function LoginScreen() {
           </View>
           <Text style={styles.brandName}>LoyWallet</Text>
           <Text style={styles.tagline}>Open. Scan. <Text style={styles.winText}>Win.</Text></Text>
-          <Text style={styles.instruction}>Sign in your wallet to manage all your loyalty cards</Text>
         </View>
 
         <View style={styles.form}>
@@ -107,9 +116,30 @@ export default function LoginScreen() {
           <TouchableOpacity 
             style={[styles.loginButton, isLoading && styles.buttonDisabled]} 
             onPress={handleLogin}
-            disabled={isLoading}
+            disabled={isLoading || isGoogleLoading}
           >
             {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.loginButtonText}>Enter Wallet</Text>}
+          </TouchableOpacity>
+
+          <View style={styles.divider}>
+            <View style={styles.line} />
+            <Text style={styles.dividerText}>OR</Text>
+            <View style={styles.line} />
+          </View>
+
+          <TouchableOpacity 
+            style={styles.googleButton} 
+            onPress={handleGoogleLogin}
+            disabled={isLoading || isGoogleLoading}
+          >
+            {isGoogleLoading ? (
+              <ActivityIndicator color="#1A1A1A" />
+            ) : (
+              <>
+                <Ionicons name="logo-google" size={20} color="#1A1A1A" style={{marginRight: 10}} />
+                <Text style={styles.googleButtonText}>Continue with Google</Text>
+              </>
+            )}
           </TouchableOpacity>
 
           <View style={styles.footer}>
@@ -126,25 +156,29 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   container: { flexGrow: 1, paddingHorizontal: 32, backgroundColor: '#FFFFFF', paddingTop: 60, paddingBottom: 40 },
-  header: { alignItems: 'center', marginBottom: 48 },
-  logoWrapper: { width: 90, height: 90, borderRadius: 24, backgroundColor: '#F0F7FF', justifyContent: 'center', alignItems: 'center', marginBottom: 20, elevation: 5 },
-  logo: { width: 60, height: 60 },
-  brandName: { fontSize: 34, fontWeight: '800', color: '#1A1A1A' },
-  tagline: { fontSize: 18, fontWeight: '600', color: '#4A4A4A', marginTop: 4, letterSpacing: 1, textTransform: 'uppercase' },
+  header: { alignItems: 'center', marginBottom: 40 },
+  logoWrapper: { width: 80, height: 80, borderRadius: 24, backgroundColor: '#F0F7FF', justifyContent: 'center', alignItems: 'center', marginBottom: 16, elevation: 5 },
+  logo: { width: 50, height: 50 },
+  brandName: { fontSize: 32, fontWeight: '800', color: '#1A1A1A' },
+  tagline: { fontSize: 16, fontWeight: '600', color: '#4A4A4A', marginTop: 4, letterSpacing: 1, textTransform: 'uppercase' },
   winText: { color: '#007AFF' },
-  instruction: { fontSize: 15, color: '#8E8E93', textAlign: 'center', marginTop: 16, lineHeight: 22 },
   form: { width: '100%' },
-  inputGroup: { marginBottom: 24 },
-  passwordHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  inputLabel: { fontSize: 14, fontWeight: '700', color: '#1A1A1A', textTransform: 'uppercase' },
-  forgotText: { fontSize: 14, color: '#007AFF', fontWeight: '700' },
-  inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9F9F9', borderRadius: 16, paddingHorizontal: 16, height: 60, borderWidth: 1, borderColor: '#F0F0F0' },
+  inputGroup: { marginBottom: 20 },
+  passwordHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  inputLabel: { fontSize: 13, fontWeight: '700', color: '#1A1A1A', textTransform: 'uppercase' },
+  forgotText: { fontSize: 13, color: '#007AFF', fontWeight: '700' },
+  inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9F9F9', borderRadius: 16, paddingHorizontal: 16, height: 56, borderWidth: 1, borderColor: '#F0F0F0' },
   inputIcon: { marginRight: 12 },
   input: { flex: 1, fontSize: 16, color: '#1A1A1A' },
-  loginButton: { backgroundColor: '#007AFF', height: 64, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginTop: 16, elevation: 8 },
-  loginButtonText: { color: '#FFFFFF', fontSize: 18, fontWeight: '700' },
+  loginButton: { backgroundColor: '#007AFF', height: 60, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginTop: 10, elevation: 4 },
+  loginButtonText: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
+  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 24 },
+  line: { flex: 1, height: 1, backgroundColor: '#F0F0F0' },
+  dividerText: { marginHorizontal: 16, color: '#8E8E93', fontSize: 12, fontWeight: '700' },
+  googleButton: { backgroundColor: '#FFFFFF', height: 60, borderRadius: 18, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#E5E5EA', flexDirection: 'row' },
+  googleButtonText: { color: '#1A1A1A', fontSize: 16, fontWeight: '600' },
   footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 32 },
-  footerText: { color: '#8E8E93', fontSize: 16 },
-  signupLink: { color: '#007AFF', fontSize: 16, fontWeight: '700' },
+  footerText: { color: '#8E8E93', fontSize: 15 },
+  signupLink: { color: '#007AFF', fontSize: 15, fontWeight: '700' },
   buttonDisabled: { backgroundColor: '#A0CFFF' },
 });
