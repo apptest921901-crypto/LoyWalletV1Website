@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Keyboard } from 'react-native';
 import { supabase } from '../config/supabase';
 import api, { setApiToken } from '../utils/api';
 import { useRouter, useSegments } from 'expo-router';
@@ -88,6 +89,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [session, loading, segments]);
 
+  const showWelcomeToast = () => {
+    Keyboard.dismiss();
+    // Tiny delay to ensure keyboard is gone and navigation has begun
+    setTimeout(() => {
+      Toast.show({
+        type: 'success',
+        text1: 'Welcome to LoyWallet!',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+    }, 200);
+  };
+
   async function signInWithGoogle() {
     try {
       const redirectTo = Linking.createURL('/');
@@ -113,8 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (access_token && refresh_token) {
             const { data: sData } = await supabase.auth.setSession({ access_token, refresh_token });
             setSession(sData.session);
-            // UNIFIED MESSAGE
-            Toast.show({ type: 'success', text1: 'Welcome to LoyWallet!' });
+            showWelcomeToast();
           }
         }
       }
@@ -127,6 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signUp(email: string, password: string, fullName: string, username: string) {
     try {
       await api.post('auth/signup', { email, password, full_name: fullName, username });
+      Keyboard.dismiss();
       Toast.show({ type: 'success', text1: 'Verification Email Sent!', text2: 'Please check your inbox.' });
     } catch (e: any) {
       const msg = e.response?.data?.detail || 'Signup failed';
@@ -145,8 +159,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(response.data.session);
         await supabase.auth.setSession({ access_token, refresh_token });
         
-        // UNIFIED MESSAGE
-        Toast.show({ type: 'success', text1: 'Welcome to LoyWallet!' });
+        // EXPERT FIX: Unified message with keyboard dismiss and visibility delay
+        showWelcomeToast();
       }
     } catch (e: any) {
       const msg = e.response?.data?.detail || 'Invalid credentials';
