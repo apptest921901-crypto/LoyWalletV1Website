@@ -32,8 +32,9 @@ export default function RootLayout() {
             }} 
           />
         </Stack>
-        <Toast />
       </AuthProvider>
+      {/* Toast must be outside AuthProvider to avoid being covered during transitions */}
+      <Toast />
     </SafeAreaProvider>
   );
 }
