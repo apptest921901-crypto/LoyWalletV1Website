@@ -91,15 +91,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const showWelcomeToast = () => {
     Keyboard.dismiss();
-    // Tiny delay to ensure keyboard is gone and navigation has begun
+    // EXPERT UX FIX: 500ms delay ensures the Dashboard is fully visible 
+    // before the toast appears, preventing it from being lost during navigation.
     setTimeout(() => {
       Toast.show({
         type: 'success',
         text1: 'Welcome to LoyWallet!',
         position: 'top',
-        visibilityTime: 3000,
+        visibilityTime: 4000,
       });
-    }, 200);
+    }, 500);
   };
 
   async function signInWithGoogle() {
@@ -159,7 +160,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(response.data.session);
         await supabase.auth.setSession({ access_token, refresh_token });
         
-        // EXPERT FIX: Unified message with keyboard dismiss and visibility delay
+        // Trigger the unified welcome message
         showWelcomeToast();
       }
     } catch (e: any) {
