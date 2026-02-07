@@ -120,8 +120,8 @@
                     <svg width="32" height="32" viewbox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
                     </svg>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2">Join the Waitlist</h3>
-                <p class="text-gray-600">Get exclusive early access when we launch in Q2 2024</p>
+                <h3 id="waitlist-title" class="text-2xl font-bold text-gray-800 mb-2">Join the Waitlist</h3>
+                <p id="waitlist-desc" class="text-gray-600">Get exclusive early access when we launch in Q1 2026</p>
             </div>
             <form id="waitlist-form" onsubmit="submitWaitlist(event)" class="space-y-4">
                 <div><label for="waitlist-name" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label> <input type="text" id="waitlist-name" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="John Doe">
@@ -140,18 +140,18 @@
             </div>
         </div>
     </div><!-- ============================================ --> <!-- SECTION 1: NAVIGATION & HEADER --> <!-- Navigation -->
-    <nav class="w-full bg-white/5 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50">
+    <nav id="navbar" class="w-full bg-transparent border-b border-white/10 sticky top-0 z-50 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white shadow-lg p-1.5">
+                    <div id="nav-logo-bg" class="w-10 h-10 rounded-xl flex items-center justify-center bg-white shadow-lg p-0.5 transition-all">
                         <!-- ============================================ --> <!-- SECTION 0: Logo Start-->
                         <img src="assets/LogoLoyWalletV1.svg" alt="LoyWallet Logo" class="w-full h-full object-contain" loading="lazy" onerror="console.error('Image failed to load:', this.src); this.style.background='linear-gradient(135deg, #7c3aed 0%, #db2777 100%)'; this.alt='LoyWallet';">
                         <!-- ============================================ --> <!-- SECTION 0: Logo End -->
-                    </div><span class="text-xl font-extrabold text-white">LoyWallet</span>
+                    </div><span id="nav-brand" class="text-xl font-extrabold text-white transition-colors">LoyWallet</span>
                 </div>
-                <div class="hidden md:flex items-center gap-8"><a href="#features" class="text-white/80 hover:text-white transition-colors font-medium">Features</a> <a href="#how-it-works" class="text-white/80 hover:text-white transition-colors font-medium">How It Works</a> <a href="#testimonials" class="text-white/80 hover:text-white transition-colors font-medium">Reviews</a> <a href="#faq" class="text-white/80 hover:text-white transition-colors font-medium">FAQ</a> <a href="#contact" class="text-white/80 hover:text-white transition-colors font-medium">Contact</a> <a href="#download" class="bg-white text-purple-600 px-6 py-2.5 rounded-full font-semibold hover:bg-white/90 transition-all shadow-lg">Join Waitlist</a>
-                </div><button class="md:hidden text-white p-2" onclick="toggleMobileMenu()">
+                <div id="nav-links" class="hidden md:flex items-center gap-8"><a href="#features" class="text-white hover:text-white transition-colors font-medium">Features</a> <a href="#how-it-works" class="text-white hover:text-white transition-colors font-medium">How It Works</a> <a href="#testimonials" class="text-white hover:text-white transition-colors font-medium">Reviews</a> <a href="#faq" class="text-white hover:text-white transition-colors font-medium">FAQ</a> <a href="#contact" class="text-white hover:text-white transition-colors font-medium">Contact</a> <a href="#download" class="bg-white text-purple-600 px-6 py-2.5 rounded-full font-semibold hover:bg-white/90 transition-all shadow-lg">Join Waitlist</a>
+                </div><button id="mobile-menu-btn" class="md:hidden text-white p-2" onclick="toggleMobileMenu()">
                 <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18" />
                 </svg></button>
             </div>
@@ -212,7 +212,7 @@
                             </div>
                             <div class="px-4 py-2">
                                 <div class="flex flex-col items-center pt-3 pb-2">
-                                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl mb-2 overflow-hidden bg-gradient-to-br from-purple-50 to-white p-2 border border-purple-100">
+                                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl mb-2 overflow-hidden bg-gradient-to-br from-purple-50 to-white p-0.5 border border-purple-100">
                                         <!--============================================ --> <!-- SECTION 0: Logo Start-->
                                         <img src="assets/LogoLoyWalletV1.svg" alt="LoyWallet Logo" class="w-full h-full object-contain" loading="lazy" onerror="console.error('Image failed to load:', this.src); this.style.background='linear-gradient(135deg, #7c3aed 0%, #db2777 100%)'; this.alt='LoyWallet';">
                                         <!--============================================ --> <!-- SECTION 0: Logo End -->
@@ -894,7 +894,7 @@
                     <h4 class="text-2xl font-bold text-gray-800 mb-3">Thank You!</h4>
                     <p class="text-gray-600 text-lg mb-2">Thank you for contacting LoyWallet support.</p>
                     <p class="text-gray-600 mb-6">We are looking at your request and will come back to you within 2 working days.</p>
-                    <p class="text-sm text-gray-500 mb-8">A confirmation email has been sent to your inbox.</p><button onclick="resetSupportForm()" class="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:opacity-90 transition-all"> Submit Another Ticket </button>
+                    <button onclick="resetSupportForm()" class="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:opacity-90 transition-all"> Submit Another Ticket </button>
                 </div>
             </div>
         </div>
@@ -934,7 +934,7 @@
             <div class="grid md:grid-cols-4 gap-8 mb-8">
                 <div>
                     <div class="flex items-center gap-2 mb-4">
-                        <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white shadow-lg p-1.5">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white shadow-lg p-0.5">
                             <!--============================================ --> <!-- SECTION 0: Logo Start -->
                             <img src="assets/LogoLoyWalletV1.svg" alt="LoyWallet Logo" class="w-full h-full object-contain" loading="lazy" onerror="console.error('Image failed to load:', this.src); this.style.background='linear-gradient(135deg, #7c3aed 0%, #db2777 100%)'; this.alt='LoyWallet';">
                             <!--============================================ --> <!-- SECTION 0: Logo End -->
@@ -965,8 +965,8 @@
                     <ul class="space-y-2 text-white/60 text-sm">
                         <li><a href="#" class="hover:text-white transition-colors">Help Center</a></li>
                         <li><a href="#" class="hover:text-white transition-colors">Contact Us</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+                        <li><a href="privacy.html" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="terms.html" class="hover:text-white transition-colors">Terms of Service</a></li>
                     </ul>
                 </div>
             </div>
@@ -995,8 +995,59 @@
       }
     }
 
+    // Scroll effect for Navbar
+    document.getElementById('app-wrapper').addEventListener('scroll', function() {
+      const navbar = document.getElementById('navbar');
+      const brand = document.getElementById('nav-brand');
+      const links = document.querySelectorAll('#nav-links a:not([href="#download"])');
+      const mobileBtn = document.getElementById('mobile-menu-btn');
+      const logoBg = document.getElementById('nav-logo-bg');
+      const scrollY = this.scrollTop;
+
+      if (scrollY > 50) {
+        navbar.classList.add('bg-white', 'shadow-md', 'py-2');
+        navbar.classList.remove('bg-transparent', 'py-4', 'border-white/10');
+        brand.classList.add('text-gray-900');
+        brand.classList.remove('text-white');
+        mobileBtn.classList.add('text-gray-900');
+        mobileBtn.classList.remove('text-white');
+        logoBg.classList.remove('bg-white');
+        logoBg.classList.add('bg-purple-100');
+        
+        links.forEach(link => {
+          link.classList.add('text-gray-600', 'hover:text-purple-600');
+          link.classList.remove('text-white', 'hover:text-white');
+        });
+      } else {
+        navbar.classList.remove('bg-white', 'shadow-md', 'py-2');
+        navbar.classList.add('bg-transparent', 'py-4', 'border-white/10');
+        brand.classList.remove('text-gray-900');
+        brand.classList.add('text-white');
+        mobileBtn.classList.remove('text-gray-900');
+        mobileBtn.classList.add('text-white');
+        logoBg.classList.add('bg-white');
+        logoBg.classList.remove('bg-purple-100');
+
+        links.forEach(link => {
+          link.classList.remove('text-gray-600', 'hover:text-purple-600');
+          link.classList.add('text-white', 'hover:text-white');
+        });
+      }
+    });
+
     // Waitlist Modal Functions
+    let currentContext = "Waitlist";
+
     function showWaitlistModal() {
+      currentContext = "Waitlist";
+      const title = document.getElementById('waitlist-title');
+      const desc = document.getElementById('waitlist-desc');
+      const btn = document.querySelector('#waitlist-form button');
+      
+      if (title) title.textContent = "Join the Waitlist";
+      if (desc) desc.textContent = "Get exclusive early access when we launch in Q1 2026";
+      if (btn) btn.textContent = "Join Waitlist";
+
       const modal = document.getElementById('waitlist-modal');
       if (modal) {
         modal.classList.remove('hidden');
@@ -1013,30 +1064,67 @@
     }
 
     function showNotifyModal() {
-      showWaitlistModal();
+      currentContext = "Notify";
+      const title = document.getElementById('waitlist-title');
+      const desc = document.getElementById('waitlist-desc');
+      const btn = document.querySelector('#waitlist-form button');
+
+      if (title) title.textContent = "Get Notified";
+      if (desc) desc.textContent = "We'll send you an alert as soon as the app is live!";
+      if (btn) btn.textContent = "Notify Me";
+
+      const modal = document.getElementById('waitlist-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
     }
 
     function submitWaitlist(event) {
       event.preventDefault();
-      const email = document.getElementById('waitlist-email').value;
-      const name = document.getElementById('waitlist-name').value;
-
-      // Show success message
+      
       const form = document.getElementById('waitlist-form');
+      const btn = form.querySelector('button');
       const successMsg = document.getElementById('success-message');
+      
+      const data = {
+        name: document.getElementById('waitlist-name').value,
+        email: document.getElementById('waitlist-email').value,
+        subject: `New ${currentContext} Request`,
+        message: `User wants to ${currentContext === 'Waitlist' ? 'join the waitlist' : 'be notified at launch'}.`
+      };
 
-      if (form && successMsg) {
-        form.classList.add('hidden');
-        successMsg.classList.remove('hidden');
-
-        // Close modal after 3 seconds
-        setTimeout(() => {
-          closeWaitlistModal();
-          form.classList.remove('hidden');
-          successMsg.classList.add('hidden');
-          event.target.reset();
-        }, 3000);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="animate-spin h-5 w-5 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0110 10" stroke-opacity="0.75"/></svg>';
       }
+
+      fetch('http://localhost:8000/api/support', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(response => {
+        if (response.ok) {
+          form.classList.add('hidden');
+          successMsg.classList.remove('hidden');
+          setTimeout(() => {
+            closeWaitlistModal();
+            form.classList.remove('hidden');
+            successMsg.classList.add('hidden');
+            form.reset();
+          }, 3000);
+        } else {
+          alert("Something went wrong. Please try again.");
+        }
+      })
+      .catch(() => alert("Error connecting to server."))
+      .finally(() => {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = currentContext === "Waitlist" ? "Join Waitlist" : "Notify Me";
+        }
+      });
     }
 
     function submitSupportTicket(event) {
@@ -1045,6 +1133,7 @@
       const submitBtn = document.getElementById('support-submit-btn');
       const formContainer = document.getElementById('support-form-container');
       const successMessage = document.getElementById('support-success-message');
+      const form = event.target;
 
       // Show loading state
       if (submitBtn) {
@@ -1052,19 +1141,41 @@
         submitBtn.innerHTML = '<svg class="animate-spin h-5 w-5 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0110 10" stroke-opacity="0.75"/></svg>';
       }
 
-      // Simulate form submission
-      setTimeout(() => {
-        if (formContainer && successMessage) {
-          formContainer.classList.add('hidden');
-          successMessage.classList.remove('hidden');
-        }
+      const data = {
+        name: document.getElementById('support-name').value,
+        email: document.getElementById('support-email').value,
+        subject: document.getElementById('support-subject').value,
+        message: document.getElementById('support-message').value
+      };
 
+      // Connect to your local backend API
+      fetch('http://localhost:8000/api/support', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(response => {
+        if (response.ok) {
+          if (formContainer && successMessage) {
+            formContainer.classList.add('hidden');
+            successMessage.classList.remove('hidden');
+          }
+          form.reset();
+        } else {
+          alert("Error sending message. The server might be having a configuration issue.");
+        }
+      })
+      .catch(error => {
+        console.error("Submission error:", error);
+        alert("Network Error: " + error.message + "\n\nPlease check if your backend terminal shows '--- ENV STATUS ---'. If not, restart it.");
+      })
+      .finally(() => {
         // Reset button
         if (submitBtn) {
           submitBtn.disabled = false;
           submitBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg><span>Submit Ticket</span>';
         }
-      }, 1500);
+      });
     }
 
     function resetSupportForm() {
@@ -1178,53 +1289,5 @@
       });
     }
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c64b4d5e56cf4e7',t:'MTc2OTgxNTI5NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
-
-async function handleSupportSubmit(event) {
-event.preventDefault();
-const data = {
-name: document.getElementById('support-name').value,
-email: document.getElementById('support-email').value,
-subject: document.getElementById('support-subject').value,
-message: document.getElementById('support-message').value
-};
-
-try {
-const response = await fetch('http://localhost:8000/api/support', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify(data)
-});
-
-if (response.ok) {
-alert("Success! Your message was sent to support@loywallet.io");
-event.target.reset();
-}
-} catch (e) {
-alert("Error sending message. Check if your backend is running.");
-}
-}
-
-async function handleSupportSubmit(event) {
-event.preventDefault();
-// ... data collection code ...
-
-try {
-// MUST USE PRODUCTION URL FOR GITHUB PAGES
-const response = await fetch('https://loywallet-backendv1.onrender.com/api/support', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify(data)
-});
-
-if (response.ok) {
-alert("Success! Your message was sent to support@loywallet.io");
-event.target.reset();
-} else {
-alert("The server is waking up. Please try again in 30 seconds.");
-}
-} catch (e) {
-alert("Server connection failed. Render might be sleeping.");
-}
-}
