@@ -1161,8 +1161,12 @@
         message: document.getElementById('support-message').value
       };
 
-      // Connect to your local backend API
-      fetch('http://localhost:8000/api/support', {
+      // Automatically use Production URL on GitHub, Localhost otherwise
+      const apiUrl = window.location.hostname.includes('github.io') 
+        ? 'https://loywallet-backendv1.onrender.com/api/support'
+        : 'http://localhost:8000/api/support';
+
+      fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -1180,7 +1184,10 @@
       })
       .catch(error => {
         console.error("Submission error:", error);
-        alert("Network Error: " + error.message + "\n\nPlease check if your backend terminal shows '--- ENV STATUS ---'. If not, restart it.");
+        const errorMsg = window.location.hostname.includes('github.io')
+          ? "Server connection failed. The backend might be waking up (Render takes ~30s). Please try again."
+          : "Network Error: Please check if your local backend is running.";
+        alert(errorMsg);
       })
       .finally(() => {
         // Reset button
