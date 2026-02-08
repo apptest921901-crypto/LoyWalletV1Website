@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terms of Service | LoyWallet</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      (function() {
+        if (window.location.hostname.includes('github.io') && window.location.pathname !== '/') {
+          const repoName = window.location.pathname.split('/')[1];
+          if (repoName && !window.location.pathname.includes('.html')) {
+             const base = document.createElement('base');
+             base.href = '/' + repoName + '/';
+             document.head.appendChild(base);
+          }
+        }
+      })();
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body class="bg-white font-['Inter'] leading-relaxed">
