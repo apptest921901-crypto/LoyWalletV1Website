@@ -43,3 +43,5 @@ Thumbs.db
 /coverage
 .tox/
 .pytest_cache/
+
+

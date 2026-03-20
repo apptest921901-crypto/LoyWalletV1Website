@@ -6,10 +6,9 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
   Platform,
   Image,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +16,25 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import api, { cardAPI, MerchantGroup, Card } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+
+// --- SKELETON COMPONENT ---
+const HomeSkeleton = () => (
+  <View style={styles.skeletonContainer}>
+    {/* Quick Access Skeleton */}
+    <View style={styles.skeletonSection}>
+      <View style={[styles.skeletonText, { width: 100, marginBottom: 15 }]} />
+      <View style={{ flexDirection: 'row', gap: 16 }}>
+        {[1, 2, 3, 4].map(i => (
+          <View key={i} style={styles.skeletonCircle} />
+        ))}
+      </View>
+    </View>
+    {/* List Skeleton */}
+    {[1, 2, 3].map(i => (
+      <View key={i} style={styles.skeletonCard} />
+    ))}
+  </View>
+);
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -39,7 +57,9 @@ export default function HomeScreen() {
 
   const loadData = async () => {
     try {
-      setLoading(true);
+      // In V1.1.0 we show skeleton on initial load or search change
+      if (!refreshing) setLoading(true);
+      
       const [groupedData, quickData] = await Promise.all([
         cardAPI.getMerchantsGrouped(searchQuery || undefined, favoritesOnly),
         api.get('cards/quick').then(res => res.data)
@@ -84,22 +104,11 @@ export default function HomeScreen() {
 
   const handleCardPress = (cardId: string, autoZoom: boolean = true) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // EXPERT UX FIX: Every card click now launches the "Scan-First" view
     router.push({
       pathname: `/card-detail/${cardId}`,
       params: { autoZoom: autoZoom ? 'true' : 'false' }
     });
   };
-
-  if (loading && !refreshing) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -147,86 +156,92 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#007AFF" />
         }
       >
-        {quickCards.length > 0 && !searchQuery && !favoritesOnly && (
-          <View style={styles.quickAccessContainer}>
-            <Text style={styles.sectionTitle}>QUICK ACCESS</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickScrollContent}>
-              {quickCards.map((card) => (
-                <TouchableOpacity 
-                  key={`quick-${card.card_id}`} 
-                  style={styles.quickCardBubble}
-                  onPress={() => handleCardPress(card.card_id!, true)}
-                >
-                  <View style={styles.quickLogoWrapper}>
-                    {card.merchant_logo_url ? (
-                      <Image source={{ uri: card.merchant_logo_url }} style={styles.quickLogo} />
-                    ) : (
-                      <Ionicons name="card" size={24} color="#007AFF" />
-                    )}
-                  </View>
-                  <Text style={styles.quickCardName} numberOfLines={1}>{card.merchant_name || card.card_name}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-
-        {merchants.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Ionicons name="card-outline" size={64} color="#E5E5EA" />
-            <Text style={styles.emptyTitle}>No Cards Yet</Text>
-            <Text style={styles.emptyText}>
-              {favoritesOnly ? 'No favorite cards' : 'Add your first loyalty card to get started'}
-            </Text>
-          </View>
+        {loading && !refreshing ? (
+          <HomeSkeleton />
         ) : (
-          merchants.map((merchant) => (
-            <View key={merchant.merchant_name} style={styles.merchantGroup}>
-              <TouchableOpacity
-                style={styles.merchantHeader}
-                onPress={() => toggleMerchant(merchant.merchant_name)}
-              >
-                <View style={styles.merchantTitleContainer}>
-                  {merchant.merchant_logo_url ? (
-                    <Image source={{ uri: merchant.merchant_logo_url }} style={styles.merchantLogo} />
-                  ) : (
-                    <View style={styles.merchantLogoPlaceholder}><Ionicons name="business" size={20} color="#8E8E93" /></View>
-                  )}
-                  <Text style={styles.merchantName}>{merchant.merchant_name}</Text>
-                  <View style={styles.cardCountBadge}><Text style={styles.cardCountText}>{merchant.card_count}</Text></View>
-                </View>
-                <Ionicons name={expandedMerchants.has(merchant.merchant_name) ? 'chevron-up' : 'chevron-down'} size={20} color="#8E8E93" />
-              </TouchableOpacity>
-
-              {expandedMerchants.has(merchant.merchant_name) && (
-                <View style={styles.cardsContainer}>
-                  {merchant.cards.map((card) => (
-                    <TouchableOpacity key={card.card_id} style={styles.cardTile} onPress={() => handleCardPress(card.card_id!)}>
-                      <View style={styles.cardContent}>
-                        <View style={styles.cardImagePreviewContainer}>
-                          {card.image_base64 ? (
-                            <Image source={{ uri: card.image_base64 }} style={styles.cardImagePreview} />
-                          ) : (
-                            <View style={styles.cardImagePlaceholder}>
-                              <Ionicons name="card" size={20} color="#8E8E93" />
-                            </View>
-                          )}
-                        </View>
-
-                        <View style={styles.cardTextContainer}>
-                          <Text style={styles.cardName}>{card.card_name}</Text>
-                          <Text style={styles.cardBarcode}>{card.barcode}</Text>
-                        </View>
-                        <TouchableOpacity onPress={(e) => { e.stopPropagation(); toggleFavorite(card.card_id!, card.is_favorite); }}>
-                          <Ionicons name={card.is_favorite ? 'star' : 'star-outline'} size={24} color={card.is_favorite ? '#FFD700' : '#8E8E93'} />
-                        </TouchableOpacity>
+          <>
+            {quickCards.length > 0 && !searchQuery && !favoritesOnly && (
+              <View style={styles.quickAccessContainer}>
+                <Text style={styles.sectionTitle}>QUICK ACCESS</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickScrollContent}>
+                  {quickCards.map((card) => (
+                    <TouchableOpacity 
+                      key={`quick-${card.card_id}`} 
+                      style={styles.quickCardBubble}
+                      onPress={() => handleCardPress(card.card_id!, true)}
+                    >
+                      <View style={styles.quickLogoWrapper}>
+                        {card.merchant_logo_url ? (
+                          <Image source={{ uri: card.merchant_logo_url }} style={styles.quickLogo} />
+                        ) : (
+                          <Ionicons name="card" size={24} color="#007AFF" />
+                        )}
                       </View>
+                      <Text style={styles.quickCardName} numberOfLines={1}>{card.merchant_name || card.card_name}</Text>
                     </TouchableOpacity>
                   ))}
+                </ScrollView>
+              </View>
+            )}
+
+            {merchants.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Ionicons name="card-outline" size={64} color="#E5E5EA" />
+                <Text style={styles.emptyTitle}>No Cards Yet</Text>
+                <Text style={styles.emptyText}>
+                  {favoritesOnly ? 'No favorite cards' : 'Add your first loyalty card to get started'}
+                </Text>
+              </View>
+            ) : (
+              merchants.map((merchant) => (
+                <View key={merchant.merchant_name} style={styles.merchantGroup}>
+                  <TouchableOpacity
+                    style={styles.merchantHeader}
+                    onPress={() => toggleMerchant(merchant.merchant_name)}
+                  >
+                    <View style={styles.merchantTitleContainer}>
+                      {merchant.merchant_logo_url ? (
+                        <Image source={{ uri: merchant.merchant_logo_url }} style={styles.merchantLogo} />
+                      ) : (
+                        <View style={styles.merchantLogoPlaceholder}><Ionicons name="business" size={20} color="#8E8E93" /></View>
+                      )}
+                      <Text style={styles.merchantName}>{merchant.merchant_name}</Text>
+                      <View style={styles.cardCountBadge}><Text style={styles.cardCountText}>{merchant.card_count}</Text></View>
+                    </View>
+                    <Ionicons name={expandedMerchants.has(merchant.merchant_name) ? 'chevron-up' : 'chevron-down'} size={20} color="#8E8E93" />
+                  </TouchableOpacity>
+
+                  {expandedMerchants.has(merchant.merchant_name) && (
+                    <View style={styles.cardsContainer}>
+                      {merchant.cards.map((card) => (
+                        <TouchableOpacity key={card.card_id} style={styles.cardTile} onPress={() => handleCardPress(card.card_id!)}>
+                          <View style={styles.cardContent}>
+                            <View style={styles.cardImagePreviewContainer}>
+                              {card.image_base64 ? (
+                                <Image source={{ uri: card.image_base64 }} style={styles.cardImagePreview} />
+                              ) : (
+                                <View style={styles.cardImagePlaceholder}>
+                                  <Ionicons name="card" size={20} color="#8E8E93" />
+                                </View>
+                              )}
+                            </View>
+
+                            <View style={styles.cardTextContainer}>
+                              <Text style={styles.cardName}>{card.card_name}</Text>
+                              <Text style={styles.cardBarcode}>{card.barcode}</Text>
+                            </View>
+                            <TouchableOpacity onPress={(e) => { e.stopPropagation(); toggleFavorite(card.card_id!, card.is_favorite); }}>
+                              <Ionicons name={card.is_favorite ? 'star' : 'star-outline'} size={24} color={card.is_favorite ? '#FFD700' : '#8E8E93'} />
+                            </TouchableOpacity>
+                          </View>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
                 </View>
-              )}
-            </View>
-          ))
+              ))
+            )}
+          </>
         )}
       </ScrollView>
 
@@ -245,7 +260,6 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F2F2F7' },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 16, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#E5E5EA' },
   headerLeft: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
   logoSmall: { width: 40, height: 40, marginRight: 12 },
@@ -284,5 +298,11 @@ const styles = StyleSheet.create({
   emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: 100 },
   emptyTitle: { fontSize: 20, fontWeight: '600', marginTop: 16 },
   emptyText: { color: '#8E8E93', marginTop: 8 },
-  fab: { position: 'absolute', right: 24, width: 56, height: 56, borderRadius: 28, backgroundColor: '#007AFF', alignItems: 'center', justifyContent: 'center', elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 }
+  fab: { position: 'absolute', right: 24, width: 56, height: 56, borderRadius: 28, backgroundColor: '#007AFF', alignItems: 'center', justifyContent: 'center', elevation: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 },
+  // SKELETON STYLES
+  skeletonContainer: { paddingTop: 16 },
+  skeletonSection: { marginBottom: 32 },
+  skeletonCircle: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#E1E9EE' },
+  skeletonCard: { width: '100%', height: 80, borderRadius: 12, backgroundColor: '#E1E9EE', marginBottom: 12 },
+  skeletonText: { height: 12, borderRadius: 4, backgroundColor: '#E1E9EE' },
 });

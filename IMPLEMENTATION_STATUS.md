@@ -1,76 +1,30 @@
-# LoyWalletV1 - Implementation Status (MVP)
+# LoyWalletV1 Implementation Status
 
-## ✅ COMPLETED (100% Core MVP)
+## 🚀 Version 1.0.1 (Stable GDPR Baseline) - COMPLETED ✅
+*Status: Verified functional on local network with dynamic CORS*
 
-### Backend Logic
-- ✅ Supabase integration with proper JWT authentication.
-- ✅ User authentication endpoints (signup, login).
-- ✅ Profile management (get, update).
-- ✅ Merchant endpoints (list with search).
-- ✅ Loyalty card CRUD with user isolation.
-- ✅ Merchant grouping and statistics.
-- ✅ All endpoints protected with JWT verification.
-
-### Frontend Development
-- ✅ **Authentication:** Complete Signup and Login screens integrated with backend.
-- ✅ **Navigation:** Root layout with Auth Guard (protected routes).
-- ✅ **Auth Context:** Global session management and automatic token injection in API calls.
-- ✅ **Cards Management:** Dashboard with merchant-grouped cards and favoriting logic.
-- ✅ **Add Card:** Implementation of merchant selection and barcode storage.
-- ✅ **UI/UX:** Animated splash screen, custom themes, and Toast notifications.
-
-### Database & Security
-- ✅ **SQL Schema:** Full schema implemented with `users`, `merchants`, and `loyalty_cards`.
-- ✅ **RLS Policies:** Row Level Security ensuring data privacy between users.
-- ✅ **Seed Data:** 20 pre-populated merchants with logo assets.
-
-## 🚀 CURRENT STATE
-The application is **fully functional** as an MVP. Users can create accounts, log in, add loyalty cards for specific merchants, view their digital wallet, and manage their profiles. The backend is reachable via local network IP for mobile device testing.
-
-## 🏗️ ARCHITECTURE SUMMARY
-
-### Authentication Flow
-```text
-User Opens App
-    ↓
-Animated Splash Screen
-    ↓
-Check Session (AuthContext)
-    ↓
-If No Session → Redirect to /login
-If Has Session → Redirect to /(tabs)
-    ↓
-JWT Token stored securely and attached to all Axios requests
-    ↓
-Backend verifies token and extracts user_id for RLS
-```
-
-### Key API Endpoints
-- `POST /api/auth/signup`      → Create account
-- `POST /api/auth/login`       → Authenticate
-- `GET  /api/profile`          → Fetch user data (Protected)
-- `GET  /api/merchants-grouped`→ Dashboard data (Protected)
-- `POST /api/cards`            → Save new card (Protected)
-- `PUT  /api/cards/{id}`       → Update card details (Protected)
-
-## 🔮 FUTURE ENHANCEMENTS (Post-MVP)
-
-### 1. Advanced Card Features
-- [ ] **Barcode Scanner:** Use camera to scan physical cards directly.
-- [ ] **Image Upload:** Allow users to upload photos of the front/back of their cards.
-
-### 2. Location & Notifications
-- [ ] **Geofencing:** Notify user when they are near a merchant with a saved card.
-- [ ] **Push Notifications:** Reminders for expiring points or special offers.
-
-### 3. UI/UX Improvements
-- [ ] **Dark Mode:** Full support for system-wide appearance settings.
-- [ ] **Offline Mode:** Local caching for card viewing without internet.
-
-### 4. Deployment
-- [ ] **Cloud Hosting:** Deploy FastAPI to AWS/Render.
-- [ ] **Production Build:** Build `.apk` and `.ipa` for app stores.
+### Core Features
+- [x] **Backend:** FastAPI production server with restored V1.0.0 logic.
+- [x] **Authentication:** Email/Password with mandatory verification email flow.
+- [x] **GDPR:** Consent Checkbox on Signup and Atomic Account Deletion.
+- [x] **Integrity:** Character-perfect mapping for Merchants and Cards.
+- [x] **Network:** Dynamic local IP detection for zero-maintenance CORS whitelist.
 
 ---
-**Status Updated:** March 2024
-**Project Name:** LoyWalletV1
+
+## 🛠 Version 1.1.0 (Feature Enhancements) - BACKLOG 🏗️
+*Status: Preparing for development*
+
+### Planned Improvements
+- [ ] **Feature:** Barcode Scanning for adding/modifying cards.
+- [ ] **UX:** Dynamic SVG Barcode generation for "Scan-First" accuracy.
+- [ ] **UX:** Implement "Pull to Refresh" on Home and Profile screens.
+- [ ] **Data:** Implement "Download My Data" (GDPR Data Portability).
+- [ ] **Cyber Security:** AES-256 Storage Encryption wrapper for local tokens.
+
+---
+
+## 📅 Maintenance Checklist
+- **Backend:** Ensure `python server.py` is restarted when switching Wi-Fi networks.
+- **Frontend:** Keep `EXPO_PUBLIC_BACKEND_URL` in sync with laptop IP.
+- **Security:** Monitor `npm audit` for dependency vulnerabilities.

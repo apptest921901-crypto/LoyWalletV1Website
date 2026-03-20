@@ -8,7 +8,6 @@ import AnimatedSplash from '../components/AnimatedSplash';
 export default function RootLayout() {
   const [splashComplete, setSplashComplete] = useState(false);
 
-  // If splash isn't complete, we render the animation first
   if (!splashComplete) {
     return (
       <SafeAreaProvider>
@@ -17,13 +16,15 @@ export default function RootLayout() {
     );
   }
 
-  // Once splash completes, we render the full Auth & Navigation stack
   return (
     <SafeAreaProvider>
       <AuthProvider>
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="index" />
+          <Stack.Screen name="splash" />
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(tabs)" />
+          {/* TOTAL INTEGRITY FIX: Exact path mapping for folder-based routes */}
           <Stack.Screen 
             name="card-detail/[id]" 
             options={{ 
@@ -33,7 +34,6 @@ export default function RootLayout() {
           />
         </Stack>
       </AuthProvider>
-      {/* Toast must be outside AuthProvider to avoid being covered during transitions */}
       <Toast />
     </SafeAreaProvider>
   );

@@ -89,20 +89,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [session, loading, segments]);
 
-  const showWelcomeToast = () => {
-    Keyboard.dismiss();
-    // EXPERT UX FIX: 500ms delay ensures the Dashboard is fully visible 
-    // before the toast appears, preventing it from being lost during navigation.
-    setTimeout(() => {
-      Toast.show({
-        type: 'success',
-        text1: 'Welcome to LoyWallet!',
-        position: 'top',
-        visibilityTime: 4000,
-      });
-    }, 500);
-  };
-
   async function signInWithGoogle() {
     try {
       const redirectTo = Linking.createURL('/');
@@ -128,7 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (access_token && refresh_token) {
             const { data: sData } = await supabase.auth.setSession({ access_token, refresh_token });
             setSession(sData.session);
-            showWelcomeToast();
+            Toast.show({ type: 'success', text1: 'Welcome to LoyWallet!' });
           }
         }
       }
@@ -141,7 +127,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signUp(email: string, password: string, fullName: string, username: string) {
     try {
       await api.post('auth/signup', { email, password, full_name: fullName, username });
-      Keyboard.dismiss();
       Toast.show({ type: 'success', text1: 'Verification Email Sent!', text2: 'Please check your inbox.' });
     } catch (e: any) {
       const msg = e.response?.data?.detail || 'Signup failed';
@@ -159,9 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(response.data.user);
         setSession(response.data.session);
         await supabase.auth.setSession({ access_token, refresh_token });
-        
-        // Trigger the unified welcome message
-        showWelcomeToast();
+        Toast.show({ type: 'success', text1: 'Welcome to LoyWallet!' });
       }
     } catch (e: any) {
       const msg = e.response?.data?.detail || 'Invalid credentials';

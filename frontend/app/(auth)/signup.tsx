@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
@@ -22,6 +23,7 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -34,6 +36,11 @@ export default function SignupScreen() {
       return;
     }
 
+    if (!agreeToTerms) {
+      Alert.alert('GDPR Consent', 'Please agree to our Privacy Policy and Terms of Service to continue.');
+      return;
+    }
+
     if (password.length < 6) {
       Alert.alert('Security', 'Password must be at least 6 characters.');
       return;
@@ -42,8 +49,6 @@ export default function SignupScreen() {
     setIsLoading(true);
     try {
       await signUp(email, password, fullName, username);
-      
-      // EXPERT UX FIX: Explicit success feedback for Email Confirmation
       Alert.alert(
         '🎉 Account Created!',
         'Please check your email inbox to verify your account. You can log in after confirmation.',
@@ -139,7 +144,22 @@ export default function SignupScreen() {
           </View>
 
           <TouchableOpacity 
-            style={[styles.signupButton, isLoading && styles.buttonDisabled]} 
+            style={styles.consentContainer} 
+            onPress={() => setAgreeToTerms(!agreeToTerms)}
+            activeOpacity={0.7}
+          >
+            <Ionicons 
+              name={agreeToTerms ? "checkbox" : "square-outline"} 
+              size={24} 
+              color={agreeToTerms ? "#007AFF" : "#C7C7CC"} 
+            />
+            <Text style={styles.consentText}>
+              I agree to the <Text style={styles.linkText} onPress={() => Linking.openURL('https://loywallet.com/privacy')}>Privacy Policy</Text> and <Text style={styles.linkText} onPress={() => Linking.openURL('https://loywallet.com/terms')}>Terms of Service</Text>
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.signupButton, (!agreeToTerms || isLoading) && styles.buttonDisabled]} 
             onPress={handleSignup}
             disabled={isLoading}
           >
@@ -173,10 +193,13 @@ const styles = StyleSheet.create({
   inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9F9F9', borderRadius: 14, paddingHorizontal: 16, height: 56, borderWidth: 1, borderColor: '#F0F0F0' },
   inputIcon: { marginRight: 12 },
   input: { flex: 1, fontSize: 16, color: '#1A1A1A' },
+  consentContainer: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 24, gap: 10, paddingRight: 20 },
+  consentText: { fontSize: 13, color: '#4A4A4A', lineHeight: 18, flex: 1 },
+  linkText: { color: '#007AFF', fontWeight: '600' },
   signupButton: { backgroundColor: '#007AFF', height: 60, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginTop: 12, elevation: 6 },
   signupButtonText: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
   footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 24 },
   footerText: { color: '#8E8E93', fontSize: 15 },
   loginLink: { color: '#007AFF', fontSize: 15, fontWeight: '700' },
-  buttonDisabled: { backgroundColor: '#A0CFFF' },
+  buttonDisabled: { backgroundColor: '#C7C7CC', elevation: 0 },
 });

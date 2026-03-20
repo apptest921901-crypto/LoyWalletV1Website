@@ -157,7 +157,6 @@ export default function AddCardScreen() {
             <Text style={styles.label}>Barcode (Optional)</Text>
             <TextInput style={styles.input} value={barcode} onChangeText={setBarcode} placeholder="Number on card" />
 
-            {/* RESTORED FAVORITE TOGGLE */}
             <TouchableOpacity 
               style={styles.favoriteRow} 
               onPress={() => {

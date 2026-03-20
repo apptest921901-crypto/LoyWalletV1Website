@@ -82,11 +82,8 @@ export default function ProfileScreen() {
         username: editedUsername,
         avatar_url: editedAvatar
       });
-      
-      // EXPERT UX FIX: Success feedback for Profile Update
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert('✅ Success', 'Your profile has been updated successfully!');
-      
       setEditModalVisible(false);
     } catch (error) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -103,6 +100,37 @@ export default function ProfileScreen() {
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Logout', style: 'destructive', onPress: () => signOut() },
+      ]
+    );
+  };
+
+  // GDPR COMPLIANCE: Account Deletion Flow
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      '🚨 Delete Account Permanently?',
+      'This action cannot be undone. All your loyalty cards and profile data will be permanently erased from our servers according to GDPR regulations.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete Everything', 
+          style: 'destructive', 
+          onPress: async () => {
+            try {
+              setLoading(true);
+              await cardAPI.deleteAccount();
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+              Alert.alert('Account Deleted', 'Your data has been successfully erased. We are sorry to see you go.');
+              await signOut();
+            } catch (error: any) {
+              // EXPERT FIX: Extract the diagnostic error message from the backend
+              const detail = error.response?.data?.detail;
+              const message = detail || 'Failed to delete account. Please contact support.';
+              Alert.alert('Deletion Error', message);
+            } finally {
+              setLoading(false);
+            }
+          } 
+        },
       ]
     );
   };
@@ -162,8 +190,15 @@ export default function ProfileScreen() {
 
           <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
             <View style={styles.menuItemLeft}>
-              <Ionicons name="log-out-outline" size={22} color="#FF3B30" />
-              <Text style={[styles.menuItemText, { color: '#FF3B30' }]}>Logout</Text>
+              <Ionicons name="log-out-outline" size={22} color="#8E8E93" />
+              <Text style={styles.menuItemText}>Logout</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.menuItem, { borderBottomWidth: 0 }]} onPress={handleDeleteAccount}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="trash-outline" size={22} color="#FF3B30" />
+              <Text style={[styles.menuItemText, { color: '#FF3B30' }]}>Delete Account</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -174,7 +209,7 @@ export default function ProfileScreen() {
             style={styles.logoSmall}
             resizeMode="contain"
           />
-          <Text style={styles.versionText}>LoyWallet v1.0.0</Text>
+          <Text style={styles.versionText}>LoyWallet v1.1.0 (EU Compliant)</Text>
         </View>
       </ScrollView>
 
