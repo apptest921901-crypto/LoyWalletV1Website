@@ -172,8 +172,11 @@ async def signup(data: dict):
         email_redirect_url = f"{site_url.rstrip('/')}/auth-callback.html"
         logger.info(f"Email redirect URL: {email_redirect_url}")
         
-        res = supabase.auth.sign_up({
-            "email": data["email"], 
+        # Use direct HTTP request to Supabase Auth API to ensure email_redirect_to works
+        import httpx
+        
+        signup_payload = {
+            "email": data["email"],
             "password": data["password"],
             "options": {
                 "data": {
@@ -182,7 +185,46 @@ async def signup(data: dict):
                 },
                 "email_redirect_to": email_redirect_url
             }
-        })
+        }
+        
+        logger.info(f"Calling Supabase Auth API directly with redirect: {email_redirect_url}")
+        
+        try:
+            async with httpx.AsyncClient() as client:
+                auth_response = await client.post(
+                    f"{os.environ['SUPABASE_URL']}/auth/v1/signup",
+                    headers={
+                        "apikey": os.environ['SUPABASE_ANON_KEY'],
+                        "Content-Type": "application/json"
+                    },
+                    json=signup_payload,
+                    timeout=30.0
+                )
+                
+                logger.info(f"Supabase auth response status: {auth_response.status_code}")
+                logger.info(f"Supabase auth response body: {auth_response.text}")
+                
+                if auth_response.status_code != 200:
+                    logger.error(f"Supabase auth error: {auth_response.text}")
+                    raise HTTPException(status_code=400, detail=f"Failed to create user account: {auth_response.text}")
+                
+                auth_data = auth_response.json()
+                logger.info(f"Auth data received: {auth_data}")
+        except Exception as http_error:
+            logger.error(f"HTTP request to Supabase auth failed: {str(http_error)}")
+            raise HTTPException(status_code=500, detail=f"Auth service error: {str(http_error)}")
+            
+        # Create a mock user object for compatibility with existing code
+        class MockUser:
+            def __init__(self, data):
+                self.id = data.get('id')
+                self.email = data.get('email')
+                self.email_confirmed_at = data.get('email_confirmed_at')
+                self.created_at = data.get('created_at')
+                
+        res = type('obj', (object,), {
+            'user': MockUser(auth_data)
+        })()
         
         if not res.user:
             logger.error("Supabase signup returned no user")
