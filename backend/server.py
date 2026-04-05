@@ -182,8 +182,7 @@ async def signup(data: dict):
                 "data": {
                     "full_name": data.get("full_name", ""),
                     "username": data.get("username", "")
-                },
-                "email_redirect_to": email_redirect_url
+                }
             }
         }
         
