@@ -1,4 +1,4 @@
-# LoyWalletV1 - Implementation Status (MVP)
+# LoyWalletV1 - Implementation Status
 
 ## ✅ COMPLETED (100% Core MVP)
 
@@ -24,8 +24,38 @@
 - ✅ **RLS Policies:** Row Level Security ensuring data privacy between users.
 - ✅ **Seed Data:** 20 pre-populated merchants with logo assets.
 
+---
+
+## 🚀 POST-MVP ENHANCEMENTS (v1.1.0-dev)
+
+### ✅ Barcode Scanner Integration (COMPLETED)
+- ✅ **Camera-based Barcode Scanning:** Integrated `expo-camera` with barcode detection for physical card scanning.
+- ✅ **QR Code Support:** Scanner detects both barcodes and QR codes.
+- ✅ **Auto-capture:** Automatic detection and capture of barcode with haptic feedback.
+- ✅ **Image Storage:** Captured card images stored as base64 and linked to card records.
+- ✅ **Navigation Flow:** Seamless flow from Add Card → Scanner → Auto-populate barcode field.
+
+### ✅ UI/UX Improvements (COMPLETED)
+- ✅ **Save Card Button Visibility:** Fixed footer positioning to ensure Save Card button is always visible above tab bar.
+- ✅ **Dynamic Button States:** Save Card button changes from grey (disabled) to blue (enabled) when mandatory fields (Merchant, Card Name) are filled.
+- ✅ **Notes Section Accessibility:** Increased ScrollView bottom spacer to prevent Notes input from being hidden by footer.
+- ✅ **Safe Area Handling:** Improved SafeAreaView configuration for better device compatibility.
+- ✅ **Tab Bar Compatibility:** Dynamic footer padding accounting for tab bar height on iOS/Android.
+
+### ✅ Card Detail Enhancements (COMPLETED)
+- ✅ **Barcode Display Component:** Reusable `BarcodeDisplay` component for rendering barcodes using WebView.
+- ✅ **Edit Mode:** Full editing capability for card details including merchant, name, barcode, notes, and favorite status.
+- ✅ **Image Management:** Add/replace card photos via camera or gallery.
+- ✅ **Delete Functionality:** Secure card deletion with confirmation dialog.
+
+### ✅ Backend API Extensions (COMPLETED)
+- ✅ **Individual Card Endpoint:** `GET /api/cards/{card_id}` for fetching single card details.
+- ✅ **Card Update Endpoint:** `PUT /api/cards/{card_id}` for modifying card data.
+- ✅ **Card Delete Endpoint:** `DELETE /api/cards/{card_id}` for removing cards.
+- ✅ **Quick Cards Endpoint:** `GET /api/cards/quick` for dashboard quick access.
+
 ## 🚀 CURRENT STATE
-The application is **fully functional** as an MVP. Users can create accounts, log in, add loyalty cards for specific merchants, view their digital wallet, and manage their profiles. The backend is reachable via local network IP for mobile device testing.
+The application is **fully functional** with barcode scanning capabilities. Users can scan physical loyalty cards, auto-populate barcode data, capture card images, and manage their digital wallet with an improved UI. Stable version tagged as `v1.0-barcode-scanner`.
 
 ## 🏗️ ARCHITECTURE SUMMARY
 

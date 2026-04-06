@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
@@ -24,6 +25,7 @@ export default function SignupScreen() {
   const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const { signUp } = useAuth();
   const router = useRouter();
@@ -36,6 +38,11 @@ export default function SignupScreen() {
 
     if (password.length < 6) {
       Alert.alert('Security', 'Password must be at least 6 characters.');
+      return;
+    }
+
+    if (!acceptedTerms) {
+      Alert.alert('Terms Required', 'Please accept the Terms of Service and Privacy Policy to continue.');
       return;
     }
 
@@ -138,10 +145,37 @@ export default function SignupScreen() {
             </View>
           </View>
 
+          <View style={styles.consentContainer}>
+            <TouchableOpacity 
+              style={styles.checkboxContainer} 
+              onPress={() => setAcceptedTerms(!acceptedTerms)}
+            >
+              <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
+                {acceptedTerms && <Ionicons name="checkmark" size={16} color="#FFF" />}
+              </View>
+              <Text style={styles.consentText}>
+                I agree to the{' '}
+                <Text 
+                  style={styles.consentLink}
+                  onPress={() => Linking.openURL('https://apptest921901-crypto.github.io/LoyWalletV1Website/terms.html')}
+                >
+                  Terms of Service
+                </Text>
+                {' '}and{' '}
+                <Text 
+                  style={styles.consentLink}
+                  onPress={() => Linking.openURL('https://apptest921901-crypto.github.io/LoyWalletV1Website/privacy.html')}
+                >
+                  Privacy Policy
+                </Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           <TouchableOpacity 
-            style={[styles.signupButton, isLoading && styles.buttonDisabled]} 
+            style={[styles.signupButton, (isLoading || !acceptedTerms) && styles.buttonDisabled]} 
             onPress={handleSignup}
-            disabled={isLoading}
+            disabled={isLoading || !acceptedTerms}
           >
             {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.signupButtonText}>Create Account</Text>}
           </TouchableOpacity>
@@ -179,4 +213,10 @@ const styles = StyleSheet.create({
   footerText: { color: '#8E8E93', fontSize: 15 },
   loginLink: { color: '#007AFF', fontSize: 15, fontWeight: '700' },
   buttonDisabled: { backgroundColor: '#A0CFFF' },
+  consentContainer: { marginTop: 8, marginBottom: 16 },
+  checkboxContainer: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: '#007AFF', alignItems: 'center', justifyContent: 'center', marginTop: 2 },
+  checkboxChecked: { backgroundColor: '#007AFF' },
+  consentText: { flex: 1, fontSize: 14, color: '#4A4A4A', lineHeight: 20 },
+  consentLink: { color: '#007AFF', fontWeight: '600' },
 });

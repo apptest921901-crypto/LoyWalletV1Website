@@ -23,11 +23,12 @@ import * as ImagePicker from 'expo-image-picker';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import { cardAPI, Card, Merchant } from '../../utils/api';
 import Toast from 'react-native-toast-message';
+import BarcodeDisplay from '../../components/BarcodeDisplay';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function CardDetailScreen() {
-  const { id, autoZoom } = useLocalSearchParams<{ id: string, autoZoom?: string }>();
+  const { id, scannedBarcode, showBarcode } = useLocalSearchParams<{ id: string, scannedBarcode?: string, showBarcode?: string }>();
   const router = useRouter();
   
   const [card, setCard] = useState<Card | null>(null);
@@ -39,13 +40,44 @@ export default function CardDetailScreen() {
   const [merchantModalVisible, setMerchantModalVisible] = useState(false);
   const [merchantSearchQuery, setMerchantSearchQuery] = useState('');
   const [imageZoomModal, setImageZoomModal] = useState(false);
+  const [barcodeZoomModal, setBarcodeZoomModal] = useState(false);
 
   useEffect(() => {
     if (id) {
-      loadCard(true); // Initial load with autoZoom potential
+      // Don't auto-zoom if we're returning from barcode scanner (scannedBarcode present)
+      const shouldAutoZoom = !scannedBarcode;
+      loadCard(shouldAutoZoom); 
       loadMerchants();
     }
-  }, [id]);
+  }, [id, scannedBarcode]);
+
+  // Handle scanned barcode from barcode scanner - MUST be after loadCard useEffect
+  // This ensures scanned barcode takes precedence over loaded data
+  useEffect(() => {
+    if (scannedBarcode && card) {
+      console.log('Applying scanned barcode:', scannedBarcode);
+      console.log('Current editedCard:', editedCard);
+      setEditedCard(prev => {
+        const updated = { 
+          ...prev,
+          // Ensure all required fields are present
+          merchant_id: prev?.merchant_id || card.merchant_id,
+          card_name: prev?.card_name || card.card_name,
+          barcode: scannedBarcode, // New scanned barcode
+          notes: prev?.notes || card.notes || '',
+          image_base64: prev?.image_base64 || card.image_base64,
+          is_favorite: prev?.is_favorite !== undefined ? prev.is_favorite : card.is_favorite,
+        };
+        console.log('Updated editedCard:', updated);
+        return updated;
+      });
+      // Auto-enter editing mode when barcode is scanned
+      setEditing(true);
+      // Show success feedback
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Toast.show({ type: 'success', text1: 'Barcode scanned!', text2: scannedBarcode });
+    }
+  }, [scannedBarcode, card]);
 
   useEffect(() => {
     const backAction = () => {
@@ -70,11 +102,13 @@ export default function CardDetailScreen() {
       setCard(data);
       setEditedCard(data);
       
-      // EXPERT UX FIX: Only auto-zoom on initial entry, not after saving
-      if (shouldAutoZoom && autoZoom !== 'false' && data.image_base64) {
-        setImageZoomModal(true);
+      // EXPERT UX FIX: Only auto-zoom barcode on initial entry, never image
+      // If showBarcode param is set, show barcode zoom
+      if (shouldAutoZoom && showBarcode === 'true' && data.barcode && data.barcode !== 'N/A') {
+        setBarcodeZoomModal(true);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       }
+      // Image auto-zoom removed - user must tap to view image
     } catch (error) {
       console.error('Error loading card:', error);
       Toast.show({ type: 'error', text1: 'Failed to load card' });
@@ -116,17 +150,28 @@ export default function CardDetailScreen() {
     if (!card?.card_id) return;
     try {
       setSaving(true);
-      await cardAPI.updateCard(card.card_id, editedCard);
+      // Ensure we send all required fields including card_id for the update
+      const updateData = {
+        ...editedCard,
+        card_id: card.card_id, // Ensure card_id is included
+      };
+      console.log('Saving card with data:', updateData);
+      console.log('New barcode:', updateData.barcode);
+      await cardAPI.updateCard(card.card_id, updateData);
       
       // EXPERT UX FIX: Heavy success feedback
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('✅ Success', 'Card details updated successfully!');
       
       setEditing(false);
-      loadCard(false); // Refresh data WITHOUT auto-zooming
-    } catch (error) {
+      await loadCard(false); // Refresh data WITHOUT auto-zooming
+      
+      // Navigate back to card list with replace to avoid back button issues
+      router.replace('/(tabs)');
+    } catch (error: any) {
+      console.error('Save error:', error);
+      console.error('Error response:', error.response?.data);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Toast.show({ type: 'error', text1: 'Update failed' });
+      Toast.show({ type: 'error', text1: 'Update failed', text2: error.response?.data?.detail || error.message });
     } finally {
       setSaving(false);
     }
@@ -167,6 +212,16 @@ export default function CardDetailScreen() {
     } catch (error) {}
   };
 
+  const openBarcodeScanner = () => {
+    router.push({
+      pathname: '/barcode-scanner',
+      params: { 
+        returnPath: `/card-detail/${id}`,
+        editMode: 'true'
+      }
+    });
+  };
+
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#007AFF" /></View>;
   if (!card) return <View style={styles.center}><Text>Card not found</Text></View>;
 
@@ -186,35 +241,70 @@ export default function CardDetailScreen() {
         </View>
 
         <ScrollView style={{flex: 1}} contentContainerStyle={{paddingBottom: 100}}>
-          <TouchableOpacity 
-            activeOpacity={editing ? 0.7 : 0.9} 
-            onPress={() => editing ? Alert.alert('Photo', 'Select:', [{text:'Camera', onPress:()=>pickImage(true)}, {text:'Gallery', onPress:()=>pickImage(false)}, {text:'Cancel'}]) : (currentImage && setImageZoomModal(true))}
-            style={styles.imageWrapper}
-          >
-            {currentImage ? <Image source={{ uri: currentImage }} style={styles.cardImage} /> : <View style={styles.noImage}><Ionicons name="camera" size={48} color="#CCC" /></View>}
-            <View style={styles.actionBadge}><Ionicons name={editing ? "camera" : "expand"} size={18} color="#FFF" /></View>
-          </TouchableOpacity>
+          {/* PRIMARY: Barcode - Tap to expand */}
+          {!editing && (
+            <TouchableOpacity 
+              activeOpacity={0.9}
+              onPress={() => setBarcodeZoomModal(true)}
+              style={styles.barcodeBoxLarge}
+            >
+              <Text style={styles.barcodeLabel}>TAP TO SCAN AT COUNTER</Text>
+              <BarcodeDisplay value={card.barcode} height={140} />
+            </TouchableOpacity>
+          )}
+          
+          {editing && (
+            <View style={styles.barcodeBox}>
+              <Text style={styles.barcodeLabel}>BARCODE</Text>
+              <View style={styles.barcodeEditRow}>
+                <TextInput 
+                  style={styles.barcodeInputEdit} 
+                  value={editedCard.barcode || ''} 
+                  onChangeText={t => {
+                    console.log('Barcode input changed:', t);
+                    setEditedCard(prev => ({...prev, barcode: t}));
+                  }}
+                  placeholder="Enter barcode or scan"
+                  key={`barcode-${editedCard.barcode}`}
+                />
+                <TouchableOpacity style={styles.scanButton} onPress={openBarcodeScanner}>
+                  <Ionicons name="scan-outline" size={24} color="#FFF" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
 
           <View style={styles.content}>
+            {/* 1. Merchant - Context */}
             <TouchableOpacity style={[styles.merchantRow, editing && styles.editableRow]} disabled={!editing} onPress={() => setMerchantModalVisible(true)}>
               {currentMerchantLogo && <Image source={{ uri: currentMerchantLogo }} style={styles.merchantLogo} />}
               <Text style={styles.merchantName}>{currentMerchantName}</Text>
               {editing && <Ionicons name="chevron-forward" size={20} color="#007AFF" style={{marginLeft: 'auto'}} />}
             </TouchableOpacity>
 
-            <View style={styles.barcodeBox}>
-              <Text style={styles.barcodeLabel}>{editing ? 'EDIT BARCODE' : 'SCAN AT COUNTER'}</Text>
-              {editing ? <TextInput style={styles.barcodeInput} value={editedCard.barcode} onChangeText={t => setEditedCard({...editedCard, barcode: t})} /> : <Text style={styles.barcodeText}>{card.barcode}</Text>}
-            </View>
-
+            {/* 2. Card Name - Identification */}
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Card Name</Text>
               {editing ? <TextInput style={styles.input} value={editedCard.card_name} onChangeText={t => setEditedCard({...editedCard, card_name: t})} /> : <Text style={styles.value}>{card.card_name}</Text>}
             </View>
 
+            {/* 3. Notes - Optional details */}
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Notes</Text>
               {editing ? <TextInput style={[styles.input, {height: 80}]} multiline value={editedCard.notes} onChangeText={t => setEditedCard({...editedCard, notes: t})} /> : <Text style={styles.value}>{card.notes || 'No notes'}</Text>}
+            </View>
+
+            {/* 4. Card Photo - Last (reference only) */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Card Photo</Text>
+              <TouchableOpacity 
+                activeOpacity={editing ? 0.7 : 0.9} 
+                onPress={() => editing ? Alert.alert('Photo', 'Select:', [{text:'Camera', onPress:()=>pickImage(true)}, {text:'Gallery', onPress:()=>pickImage(false)}, {text:'Cancel'}]) : (currentImage && setImageZoomModal(true))}
+                style={styles.imageWrapperSmall}
+              >
+                {currentImage ? <Image source={{ uri: currentImage }} style={styles.cardImageSmall} /> : <View style={styles.noImageSmall}><Ionicons name="camera" size={32} color="#CCC" /><Text style={{color: '#8E8E93', marginTop: 4, fontSize: 12}}>No photo</Text></View>}
+                {editing && <View style={styles.actionBadge}><Ionicons name="camera" size={18} color="#FFF" /></View>}
+              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
@@ -227,7 +317,19 @@ export default function CardDetailScreen() {
             </View>
           ) : (
             <View style={styles.row}>
-              <TouchableOpacity style={[styles.btnSec, {flex: 1}]} onPress={() => setEditing(true)}><Ionicons name="create-outline" size={20} color="#007AFF" /><Text style={styles.btnSecTextBlue}>Edit</Text></TouchableOpacity>
+              <TouchableOpacity style={[styles.btnSec, {flex: 1}]} onPress={() => {
+                // Ensure editedCard has all current card data including barcode
+                setEditedCard({
+                  ...card,
+                  merchant_id: card.merchant_id,
+                  card_name: card.card_name,
+                  barcode: card.barcode,
+                  notes: card.notes,
+                  image_base64: card.image_base64,
+                  is_favorite: card.is_favorite,
+                });
+                setEditing(true);
+              }}><Ionicons name="create-outline" size={20} color="#007AFF" /><Text style={styles.btnSecTextBlue}>Edit</Text></TouchableOpacity>
               <TouchableOpacity style={[styles.btnSec, {flex: 1}]} onPress={handleDelete}><Ionicons name="trash-outline" size={20} color="#FF3B30" /><Text style={styles.btnSecTextRed}>Delete</Text></TouchableOpacity>
             </View>
           )}
@@ -236,6 +338,36 @@ export default function CardDetailScreen() {
 
       <Modal visible={merchantModalVisible} animationType="slide" transparent={true} onRequestClose={() => setMerchantModalVisible(false)}>
         <View style={styles.modalOverlay}><View style={styles.modalContent}><View style={styles.modalHeader}><Text style={styles.modalTitle}>Merchant</Text><TouchableOpacity onPress={() => setMerchantModalVisible(false)}><Ionicons name="close" size={28} /></TouchableOpacity></View><View style={styles.searchBar}><Ionicons name="search" size={20} color="#8E8E93" /><TextInput placeholder="Search..." style={{flex:1, marginLeft: 10}} value={merchantSearchQuery} onChangeText={setMerchantSearchQuery} /></View><ScrollView style={{paddingHorizontal: 20}}>{filteredMerchants.map(m => (<TouchableOpacity key={m.merchant_id} style={styles.mItem} onPress={() => { setEditedCard({...editedCard, merchant_id: m.merchant_id}); setMerchantModalVisible(false); }}><Image source={{ uri: m.logo_url }} style={styles.mLogo} /><Text style={styles.mName}>{m.name}</Text></TouchableOpacity>))}</ScrollView></View></View>
+      </Modal>
+
+      {/* Barcode Zoom Modal - Horizontal Full Screen with Edit/Delete */}
+      <Modal visible={barcodeZoomModal} transparent={true} animationType="fade" statusBarTranslucent={true} onRequestClose={() => setBarcodeZoomModal(false)}>
+        <View style={styles.barcodeZoomWrapper}>
+          <TouchableOpacity style={styles.topCloseBtn} onPress={() => setBarcodeZoomModal(false)}>
+            <Ionicons name="close" size={32} color="#FFF" />
+          </TouchableOpacity>
+          <View style={styles.barcodeRotatedContainer}>
+            <View style={styles.barcodeZoomContent}>
+              <Text style={styles.barcodeZoomLabel}>SCAN AT COUNTER</Text>
+              <View style={{ width: SCREEN_HEIGHT * 0.7, height: 200 }}>
+                <BarcodeDisplay value={card.barcode} height={150} showText={true} />
+              </View>
+              <Text style={styles.barcodeZoomHint}>Show this to the cashier</Text>
+            </View>
+          </View>
+          {/* Action Bar - Same as image zoom */}
+          <View style={styles.expertActionBar}>
+            <TouchableOpacity style={styles.actionIconBtn} onPress={() => { setBarcodeZoomModal(false); setEditing(true); }}>
+              <Ionicons name="create-outline" size={24} color="#FFF" />
+              <Text style={styles.actionLabel}>Edit</Text>
+            </TouchableOpacity>
+            <View style={styles.actionDivider} />
+            <TouchableOpacity style={styles.actionIconBtn} onPress={() => { setBarcodeZoomModal(false); handleDelete(); }}>
+              <Ionicons name="trash-outline" size={24} color="#FF3B30" />
+              <Text style={[styles.actionLabel, {color: '#FF3B30'}]}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
 
       <Modal visible={imageZoomModal} transparent={true} animationType="fade" statusBarTranslucent={true} onRequestClose={() => setImageZoomModal(false)}>
@@ -287,10 +419,17 @@ const styles = StyleSheet.create({
   editableRow: { backgroundColor: '#EBF5FF', borderWidth: 1, borderColor: '#007AFF' },
   merchantLogo: { width: 32, height: 32, borderRadius: 6, marginRight: 12 },
   merchantName: { fontSize: 20, fontWeight: '700' },
-  barcodeBox: { backgroundColor: '#000', padding: 24, borderRadius: 16, alignItems: 'center', marginBottom: 24 },
-  barcodeLabel: { color: '#8E8E93', fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 8 },
+  barcodeBoxLarge: { backgroundColor: '#000', padding: 20, borderRadius: 16, alignItems: 'center', margin: 16, marginBottom: 8 },
+  barcodeBox: { backgroundColor: '#000', padding: 24, borderRadius: 16, alignItems: 'center', margin: 16, marginBottom: 8 },
+  barcodeLabel: { color: '#8E8E93', fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 12 },
   barcodeText: { color: '#FFF', fontSize: 32, fontWeight: '700', letterSpacing: 2 },
-  barcodeInput: { color: '#FFF', fontSize: 32, fontWeight: '700', letterSpacing: 2, borderBottomWidth: 1, borderBottomColor: '#007AFF', width: '100%', textAlign: 'center' },
+  barcodeInput: { color: '#FFF', fontSize: 24, fontWeight: '700', letterSpacing: 2, borderBottomWidth: 1, borderBottomColor: '#007AFF', width: '100%', textAlign: 'center' },
+  barcodeEditRow: { flexDirection: 'row', alignItems: 'center', width: '100%', gap: 12 },
+  barcodeInputEdit: { flex: 1, color: '#FFF', fontSize: 20, fontWeight: '600', letterSpacing: 1, backgroundColor: 'rgba(255,255,255,0.1)', padding: 12, borderRadius: 8 },
+  scanButton: { backgroundColor: '#007AFF', padding: 12, borderRadius: 8 },
+  imageWrapperSmall: { width: '100%', height: 120, backgroundColor: '#FFF', borderRadius: 12, overflow: 'hidden', position: 'relative', borderWidth: 1, borderColor: '#E5E5EA' },
+  cardImageSmall: { width: '100%', height: '100%', resizeMode: 'cover' },
+  noImageSmall: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F9F9F9' },
   fieldGroup: { marginBottom: 20 },
   label: { fontSize: 13, color: '#8E8E93', fontWeight: '600', textTransform: 'uppercase', marginBottom: 8 },
   value: { fontSize: 17, color: '#1A1A1A', backgroundColor: '#FFF', padding: 16, borderRadius: 12 },
@@ -311,8 +450,13 @@ const styles = StyleSheet.create({
   mLogo: { width: 36, height: 36, borderRadius: 8, marginRight: 15 },
   mName: { flex: 1, fontSize: 17, fontWeight: '500' },
   masterZoomWrapper: { flex: 1, backgroundColor: 'black', justifyContent: 'center', alignItems: 'center' },
-  topCloseBtn: { position: 'absolute', top: 50, left: 24, zIndex: 1000, padding: 10, backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 30 },
+  barcodeZoomWrapper: { flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' },
+  topCloseBtn: { position: 'absolute', top: 50, left: 24, zIndex: 1000, padding: 10, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 30 },
   rotatedContainer: { width: SCREEN_HEIGHT, height: SCREEN_WIDTH, transform: [{ rotate: '90deg' }], justifyContent: 'center', alignItems: 'center' },
+  barcodeRotatedContainer: { width: SCREEN_HEIGHT, height: SCREEN_WIDTH, transform: [{ rotate: '90deg' }], justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' },
+  barcodeZoomContent: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFF', padding: 40, borderRadius: 20 },
+  barcodeZoomLabel: { fontSize: 18, fontWeight: '700', color: '#000', marginBottom: 20, letterSpacing: 2 },
+  barcodeZoomHint: { fontSize: 14, color: '#8E8E93', marginTop: 20 },
   expertActionBar: { position: 'absolute', bottom: 40, flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.15)', paddingVertical: 12, paddingHorizontal: 24, borderRadius: 30, alignItems: 'center', gap: 24, zIndex: 1000, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   actionIconBtn: { alignItems: 'center', gap: 4 },
   actionLabel: { color: '#FFF', fontSize: 10, fontWeight: '700', textTransform: 'uppercase' },

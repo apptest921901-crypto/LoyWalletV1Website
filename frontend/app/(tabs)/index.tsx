@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import api, { cardAPI, MerchantGroup, Card } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
@@ -36,6 +36,16 @@ export default function HomeScreen() {
       loadData();
     }
   }, [session, searchQuery, favoritesOnly]);
+
+  // Refresh data when screen comes into focus (after editing a card)
+  useFocusEffect(
+    useCallback(() => {
+      if (session) {
+        console.log('Screen focused - refreshing card data');
+        loadData();
+      }
+    }, [session])
+  );
 
   const loadData = async () => {
     try {
@@ -84,10 +94,10 @@ export default function HomeScreen() {
 
   const handleCardPress = (cardId: string, autoZoom: boolean = true) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // EXPERT UX FIX: Every card click now launches the "Scan-First" view
+    // EXPERT UX FIX: Every card click now launches the barcode view directly
     router.push({
       pathname: `/card-detail/${cardId}`,
-      params: { autoZoom: autoZoom ? 'true' : 'false' }
+      params: { showBarcode: 'true' }
     });
   };
 
@@ -203,19 +213,34 @@ export default function HomeScreen() {
                   {merchant.cards.map((card) => (
                     <TouchableOpacity key={card.card_id} style={styles.cardTile} onPress={() => handleCardPress(card.card_id!)}>
                       <View style={styles.cardContent}>
-                        <View style={styles.cardImagePreviewContainer}>
-                          {card.image_base64 ? (
-                            <Image source={{ uri: card.image_base64 }} style={styles.cardImagePreview} />
+                        {/* Show Barcode instead of Image */}
+                        <View style={styles.cardBarcodePreviewContainer}>
+                          {card.barcode && card.barcode !== 'N/A' ? (
+                            <View style={styles.barcodeBox}>
+                              <Text style={styles.barcodeText} numberOfLines={1}>{card.barcode}</Text>
+                              <View style={styles.barcodeLines}>
+                                <View style={styles.barcodeLine} />
+                                <View style={[styles.barcodeLine, {width: 2}]} />
+                                <View style={[styles.barcodeLine, {width: 4}]} />
+                                <View style={[styles.barcodeLine, {width: 1}]} />
+                                <View style={[styles.barcodeLine, {width: 3}]} />
+                                <View style={[styles.barcodeLine, {width: 2}]} />
+                                <View style={[styles.barcodeLine, {width: 4}]} />
+                                <View style={[styles.barcodeLine, {width: 1}]} />
+                                <View style={[styles.barcodeLine, {width: 2}]} />
+                                <View style={[styles.barcodeLine, {width: 3}]} />
+                              </View>
+                            </View>
                           ) : (
-                            <View style={styles.cardImagePlaceholder}>
-                              <Ionicons name="card" size={20} color="#8E8E93" />
+                            <View style={styles.noBarcodePlaceholder}>
+                              <Ionicons name="barcode-outline" size={20} color="#8E8E93" />
                             </View>
                           )}
                         </View>
 
                         <View style={styles.cardTextContainer}>
                           <Text style={styles.cardName}>{card.card_name}</Text>
-                          <Text style={styles.cardBarcode}>{card.barcode}</Text>
+                          <Text style={styles.cardBarcode}>{card.barcode || 'No barcode'}</Text>
                         </View>
                         <TouchableOpacity onPress={(e) => { e.stopPropagation(); toggleFavorite(card.card_id!, card.is_favorite); }}>
                           <Ionicons name={card.is_favorite ? 'star' : 'star-outline'} size={24} color={card.is_favorite ? '#FFD700' : '#8E8E93'} />
@@ -275,9 +300,46 @@ const styles = StyleSheet.create({
   cardsContainer: { borderTopWidth: 1, borderTopColor: '#F2F2F7' },
   cardTile: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#F2F2F7' },
   cardContent: { flexDirection: 'row', alignItems: 'center' },
-  cardImagePreviewContainer: { marginRight: 16 },
-  cardImagePreview: { width: 50, height: 32, borderRadius: 4, backgroundColor: '#F2F2F7' },
-  cardImagePlaceholder: { width: 50, height: 32, borderRadius: 4, backgroundColor: '#F2F2F7', alignItems: 'center', justifyContent: 'center' },
+  cardBarcodePreviewContainer: { marginRight: 16, width: 80 },
+  barcodeBox: { 
+    width: 80, 
+    height: 50, 
+    backgroundColor: '#FFF', 
+    borderRadius: 4, 
+    borderWidth: 1, 
+    borderColor: '#E5E5EA',
+    padding: 6,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  barcodeText: { 
+    fontSize: 10, 
+    color: '#000', 
+    fontFamily: 'monospace',
+    marginBottom: 4
+  },
+  barcodeLines: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+    height: 20
+  },
+  barcodeLine: {
+    width: 3,
+    height: '100%',
+    backgroundColor: '#000'
+  },
+  noBarcodePlaceholder: { 
+    width: 80, 
+    height: 50, 
+    borderRadius: 4, 
+    backgroundColor: '#F2F2F7', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E5EA'
+  },
   cardTextContainer: { flex: 1 },
   cardName: { fontSize: 16, fontWeight: '500', color: '#1A1A1A' },
   cardBarcode: { fontSize: 13, color: '#8E8E93', marginTop: 2 },

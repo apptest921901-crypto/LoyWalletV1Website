@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { Keyboard } from 'react-native';
 import { supabase } from '../config/supabase';
 import api, { setApiToken } from '../utils/api';
@@ -36,40 +36,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const segments = useSegments();
+  
+  // EXPERT FIX: Use a ref to track the processed token.
+  // This prevents the "Already Used" error by ensuring we don't process the same token twice
+  // during background refreshes or re-renders.
+  const lastProcessedToken = useRef<string | null>(null);
+
+  const refreshProfile = useCallback(async (token: string) => {
+    if (token === lastProcessedToken.current) return;
+    lastProcessedToken.current = token;
+    
+    try {
+      setApiToken(token);
+      const res = await api.get('profile');
+      setUser(res.data);
+    } catch (e) {
+      console.warn('Profile fetch failed:', e);
+    }
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
-    async function initialize() {
-      const { data: { session: initialSession } } = await supabase.auth.getSession();
-      if (isMounted) {
-        if (initialSession) {
+
+    async function initializeAuth() {
+      try {
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        if (isMounted && initialSession) {
           setSession(initialSession);
-          setApiToken(initialSession.access_token);
-          try {
-            const res = await api.get('profile');
-            setUser(res.data);
-          } catch (e) {}
+          await refreshProfile(initialSession.access_token);
         }
-        setLoading(false);
+      } catch (error) {
+        console.error('Auth init error:', error);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     }
-    initialize();
+
+    initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      if (isMounted) {
-        setSession(newSession);
-        if (newSession) {
-          setApiToken(newSession.access_token);
-          if (event === 'SIGNED_IN') {
-            try {
-              const res = await api.get('profile');
-              setUser(res.data);
-            } catch (e) {}
-          }
-        } else {
-          setApiToken(null);
-          setUser(null);
+      if (!isMounted) return;
+
+      if (newSession) {
+        // Prevent duplicate processing of the same session/token
+        if (newSession.access_token !== lastProcessedToken.current) {
+          setSession(newSession);
+          await refreshProfile(newSession.access_token);
         }
+      } else {
+        setSession(null);
+        setApiToken(null);
+        setUser(null);
+        lastProcessedToken.current = null;
       }
     });
 
@@ -77,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [refreshProfile]); // Dependency array is now stable
 
   useEffect(() => {
     if (loading) return;
@@ -91,14 +109,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const showWelcomeToast = () => {
     Keyboard.dismiss();
-    // EXPERT UX FIX: 500ms delay ensures the Dashboard is fully visible 
-    // before the toast appears, preventing it from being lost during navigation.
     setTimeout(() => {
       Toast.show({
         type: 'success',
-        text1: 'Welcome to LoyWallet!',
+        text1: 'Welcome back!',
         position: 'top',
-        visibilityTime: 4000,
+        visibilityTime: 3000,
       });
     }, 500);
   };
@@ -108,10 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const redirectTo = Linking.createURL('/');
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo,
-          skipBrowserRedirect: true,
-        },
+        options: { redirectTo, skipBrowserRedirect: true },
       });
 
       if (error) throw error;
@@ -126,9 +139,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const refresh_token = params.get('refresh_token');
 
           if (access_token && refresh_token) {
-            const { data: sData } = await supabase.auth.setSession({ access_token, refresh_token });
-            setSession(sData.session);
-            showWelcomeToast();
+            try {
+              const { data: sData } = await supabase.auth.setSession({ access_token, refresh_token });
+              setSession(sData.session);
+              showWelcomeToast();
+            } catch (err: any) {
+              // Ignore "Already Used" error as it means the listener handled it
+              if (!err.message?.includes('Already Used')) throw err;
+            }
           }
         }
       }
@@ -155,12 +173,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await api.post('auth/login', { email, password });
       if (response.data.session?.access_token) {
         const { access_token, refresh_token } = response.data.session;
-        setApiToken(access_token);
-        setUser(response.data.user);
-        setSession(response.data.session);
-        await supabase.auth.setSession({ access_token, refresh_token });
         
-        // Trigger the unified welcome message
+        try {
+          await supabase.auth.setSession({ access_token, refresh_token });
+        } catch (err: any) {
+          if (!err.message?.includes('Already Used')) throw err;
+        }
+
+        setSession(response.data.session);
+        await refreshProfile(access_token);
         showWelcomeToast();
       }
     } catch (e: any) {
@@ -175,6 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setApiToken(null);
     setSession(null);
     setUser(null);
+    lastProcessedToken.current = null;
     router.replace('/(auth)/login');
     Toast.show({ type: 'info', text1: 'Signed out successfully' });
   }

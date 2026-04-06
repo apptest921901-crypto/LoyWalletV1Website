@@ -5,12 +5,15 @@ LoyWalletV1 is a modern, full-stack mobile application designed to digitize and 
 ## 🚀 Features
 
 - **Digital Wallet:** Store all your loyalty cards in one place.
+- **Barcode Scanner:** Scan physical loyalty cards using device camera with auto-detection.
 - **Barcode Display:** Clear, high-quality barcode rendering for easy scanning at checkout.
+- **Card Images:** Capture and store photos of physical cards for visual reference.
 - **Merchant Management:** Categorized list of pre-populated popular merchants.
 - **Secure Authentication:** JWT-based login and signup powered by Supabase.
 - **Cloud Sync:** Your data is securely stored and accessible across devices.
 - **Search & Filter:** Quickly find cards by merchant name or category.
 - **Favorite Cards:** Pin your most-used cards for instant access.
+- **Card Editing:** Full CRUD operations - create, read, update, and delete cards.
 
 ## 🛠️ Tech Stack
 
@@ -20,6 +23,8 @@ LoyWalletV1 is a modern, full-stack mobile application designed to digitize and 
 - **State Management:** React Context API
 - **Styling:** React Native StyleSheet with custom animations
 - **HTTP Client:** Axios
+- **Camera/Scanning:** `expo-camera` with barcode detection
+- **Image Handling:** `expo-image-picker` for camera/gallery access
 
 ### Backend
 - **Language:** Python 3.10+

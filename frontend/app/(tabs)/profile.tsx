@@ -12,11 +12,13 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Linking,
+  Clipboard,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
-import { cardAPI, Stats } from '../../utils/api';
+import { cardAPI, Stats, api } from '../../utils/api';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -25,6 +27,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editedName, setEditedName] = useState(user?.full_name || '');
@@ -82,11 +85,8 @@ export default function ProfileScreen() {
         username: editedUsername,
         avatar_url: editedAvatar
       });
-      
-      // EXPERT UX FIX: Success feedback for Profile Update
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert('✅ Success', 'Your profile has been updated successfully!');
-      
       setEditModalVisible(false);
     } catch (error) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -105,6 +105,97 @@ export default function ProfileScreen() {
         { text: 'Logout', style: 'destructive', onPress: () => signOut() },
       ]
     );
+  };
+
+  const openLegalLink = (url: string) => {
+    Linking.openURL(url).catch(() => {
+      Alert.alert('Error', 'Could not open the link. Please try again later.');
+    });
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This will permanently delete your account and all your data. This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive', 
+          onPress: () => {
+            Alert.alert(
+              'Final Confirmation',
+              'Please confirm you want to delete your account permanently.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { 
+                  text: 'Confirm Delete', 
+                  style: 'destructive', 
+                  onPress: async () => {
+                    try {
+                      await api.delete('profile');
+                      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                      Alert.alert('Account Deleted', 'Your account has been deleted successfully.');
+                      signOut();
+                    } catch (error) {
+                      Alert.alert('Error', 'Failed to delete account. Please try again later.');
+                    }
+                  }
+                }
+              ]
+            );
+          }
+        }
+      ]
+    );
+  };
+
+  const handleExportData = async () => {
+    try {
+      setIsExporting(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      
+      const response = await api.get('profile/export');
+      const dataStr = JSON.stringify(response.data, null, 2);
+      
+      setIsExporting(false);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+      Alert.alert(
+        'Data Export Ready',
+        'Your data has been prepared according to GDPR portability standards.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Copy to Clipboard', 
+            onPress: () => {
+              Clipboard.setString(dataStr);
+              Alert.alert('Copied', 'Data copied to clipboard.');
+            }
+          },
+          { 
+            text: 'Share via Email', 
+            onPress: () => {
+              const body = encodeURIComponent(dataStr);
+              // mailto has character limits (~2000), so we check length
+              if (body.length > 1800) {
+                Alert.alert(
+                  'Data too large for Email', 
+                  'Your export contains too many cards to send via email link. Please use "Copy to Clipboard" instead.',
+                  [{ text: 'OK' }]
+                );
+              } else {
+                Linking.openURL(`mailto:?subject=My LoyWallet Data Export&body=${body}`);
+              }
+            }
+          }
+        ]
+      );
+    } catch (error) {
+      setIsExporting(false);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert('Export Failed', 'Failed to prepare your data. Please check your connection and try again.');
+    }
   };
 
   return (
@@ -165,6 +256,79 @@ export default function ProfileScreen() {
               <Ionicons name="log-out-outline" size={22} color="#FF3B30" />
               <Text style={[styles.menuItemText, { color: '#FF3B30' }]}>Logout</Text>
             </View>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.menu}>
+          <Text style={styles.menuTitle}>GDPR Data Rights</Text>
+          <TouchableOpacity 
+            style={[styles.menuItem, isExporting && { opacity: 0.5 }]} 
+            onPress={handleExportData}
+            disabled={isExporting}
+          >
+            <View style={styles.menuItemLeft}>
+              {isExporting ? (
+                <ActivityIndicator size="small" color="#007AFF" />
+              ) : (
+                <Ionicons name="download-outline" size={22} color="#007AFF" />
+              )}
+              <Text style={styles.menuItemText}>{isExporting ? 'Preparing Export...' : 'Export My Data'}</Text>
+            </View>
+            {!isExporting && <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />}
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.menuItem} onPress={handleDeleteAccount}>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="trash-outline" size={22} color="#FF3B30" />
+              <Text style={[styles.menuItemText, { color: '#FF3B30' }]}>Delete Account</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.menu}>
+          <Text style={styles.menuTitle}>Legal & Support</Text>
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => openLegalLink('https://apptest921901-crypto.github.io/LoyWalletV1Website/privacy.html')}
+          >
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="shield-outline" size={22} color="#007AFF" />
+              <Text style={styles.menuItemText}>Privacy Policy</Text>
+            </View>
+            <Ionicons name="open-outline" size={20} color="#C7C7CC" />
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => openLegalLink('https://apptest921901-crypto.github.io/LoyWalletV1Website/terms.html')}
+          >
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="document-text-outline" size={22} color="#007AFF" />
+              <Text style={styles.menuItemText}>Terms of Service</Text>
+            </View>
+            <Ionicons name="open-outline" size={20} color="#C7C7CC" />
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => openLegalLink('https://apptest921901-crypto.github.io/LoyWalletV1Website/mentions-legales.html')}
+          >
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="business-outline" size={22} color="#007AFF" />
+              <Text style={styles.menuItemText}>Legal Notice</Text>
+            </View>
+            <Ionicons name="open-outline" size={20} color="#C7C7CC" />
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => openLegalLink('https://apptest921901-crypto.github.io/LoyWalletV1Website/')}
+          >
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="help-circle-outline" size={22} color="#007AFF" />
+              <Text style={styles.menuItemText}>Support & Contact</Text>
+            </View>
+            <Ionicons name="open-outline" size={20} color="#C7C7CC" />
           </TouchableOpacity>
         </View>
 

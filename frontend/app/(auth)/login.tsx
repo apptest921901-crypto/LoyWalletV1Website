@@ -16,6 +16,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import api from '../../utils/api';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -38,10 +39,37 @@ export default function LoginScreen() {
       await signIn(email, password);
     } catch (error: any) {
       const detail = error.response?.data?.detail;
-      const message = detail || 'Invalid credentials. Please try again.';
-      Alert.alert('Access Denied', message);
+      
+      // Check if email is not verified
+      if (detail?.toLowerCase().includes('email') && detail?.toLowerCase().includes('confirm')) {
+        Alert.alert(
+          'Email Not Verified',
+          'Please verify your email before logging in. Check your inbox or resend the verification email.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Resend Email', onPress: handleResendVerification }
+          ]
+        );
+      } else {
+        const message = detail || 'Invalid credentials. Please try again.';
+        Alert.alert('Access Denied', message);
+      }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      Alert.alert('Email Required', 'Please enter your email address first.');
+      return;
+    }
+    
+    try {
+      await api.post('auth/resend-verification', { email });
+      Alert.alert('Success', 'Verification email has been resent. Please check your inbox.');
+    } catch (error) {
+      Alert.alert('Error', 'Could not resend verification email. Please try again later.');
     }
   };
 
