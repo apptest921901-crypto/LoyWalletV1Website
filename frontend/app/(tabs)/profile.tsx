@@ -177,7 +177,6 @@ export default function ProfileScreen() {
             text: 'Share via Email', 
             onPress: () => {
               const body = encodeURIComponent(dataStr);
-              // mailto has character limits (~2000), so we check length
               if (body.length > 1800) {
                 Alert.alert(
                   'Data too large for Email', 
@@ -191,10 +190,18 @@ export default function ProfileScreen() {
           }
         ]
       );
-    } catch (error) {
+    } catch (error: any) {
       setIsExporting(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert('Export Failed', 'Failed to prepare your data. Please check your connection and try again.');
+      
+      // EXPERT DEBUG: Extract real error from server response
+      const serverError = error.response?.data?.detail || error.message || 'Unknown error';
+      console.error('Export Error Detail:', serverError);
+      
+      Alert.alert(
+        'Export Engine Error', 
+        `The server reported: ${serverError}\n\nPlease share this with support.`
+      );
     }
   };
 
