@@ -56,6 +56,18 @@ except Exception as e:
     logger.error(f"❌ Database Initialization Failed: {e}")
     supabase = supabase_admin = None
 
+# --- BULLETPROOF HELPER: DATA MAPPING ---
+def format_card(card: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Expert Mapper: Translates Database 'id' to Frontend 'card_id'.
+    Ensures React Native keys are unique and valid.
+    """
+    if not card: return card
+    formatted = {**card}
+    if "id" in card:
+        formatted["card_id"] = str(card["id"])
+    return formatted
+
 # --- AUTH DEPENDENCY ---
 async def get_current_user(authorization: Optional[str] = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
@@ -79,10 +91,14 @@ async def root():
 
 api_router = APIRouter(prefix="/api")
 
-# --- DIAGNOSTICS ---
+# --- DIAGNOSTICS (RAILWAY FIX) ---
 @api_router.get("/health")
 async def health_check():
-    return {"status": "healthy", "db_connected": supabase is not None}
+    return {
+        "status": "healthy", 
+        "db_connected": supabase is not None,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
 
 # --- AUTHENTICATION ---
 @api_router.post("/auth/signup")
@@ -132,6 +148,7 @@ async def get_merchants():
 
 @api_router.get("/merchants-grouped")
 async def get_merchants_grouped(search: Optional[str] = None, favorites_only: bool = False, user=Depends(get_current_user)):
+    # Uses the SQL View for high-performance joined data
     query = supabase_admin.table("loyalty_cards_with_merchants").select("*").eq("user_id", user.id)
     if search:
         query = query.ilike("card_name", f"%{search}%")
@@ -151,7 +168,8 @@ async def get_merchants_grouped(search: Optional[str] = None, favorites_only: bo
                 "card_count": 0,
                 "cards": []
             }
-        grouped[m_id]["cards"].append(c)
+        # BULLETPROOF: Map card data inside the grouping
+        grouped[m_id]["cards"].append(format_card(c))
         grouped[m_id]["card_count"] += 1
     
     return list(grouped.values())
@@ -166,24 +184,28 @@ async def get_quick_cards(user=Depends(get_current_user)):
         .eq("is_favorite", True)\
         .limit(10)\
         .execute()
-    return res.data
+    # BULLETPROOF: Map cards for unique keys
+    return [format_card(c) for c in res.data]
 
 @api_router.get("/cards")
 async def get_cards(user=Depends(get_current_user)):
     res = supabase_admin.table("loyalty_cards_with_merchants").select("*").eq("user_id", user.id).execute()
-    return res.data
+    # BULLETPROOF: Map cards for unique keys
+    return [format_card(c) for c in res.data]
 
 @api_router.post("/cards")
 async def create_card(card: CardCreate, user=Depends(get_current_user)):
     card_data = card.dict()
     card_data["user_id"] = user.id
     res = supabase_admin.table("loyalty_cards").insert(card_data).execute()
-    return res.data[0]
+    # BULLETPROOF: Ensure the newly created card is mapped
+    return format_card(res.data[0])
 
 @api_router.put("/cards/{card_id}")
 async def update_card(card_id: str, updates: Dict[str, Any], user=Depends(get_current_user)):
     res = supabase_admin.table("loyalty_cards").update(updates).eq("id", card_id).eq("user_id", user.id).execute()
-    return {"status": "success", "data": res.data[0]}
+    # BULLETPROOF: Map updated object
+    return {"status": "success", "data": format_card(res.data[0])}
 
 @api_router.delete("/cards/{card_id}")
 async def delete_card(card_id: str, user=Depends(get_current_user)):
@@ -209,15 +231,17 @@ async def get_stats(user=Depends(get_current_user)):
 async def export_data(user=Depends(get_current_user)):
     profile = supabase_admin.table("users").select("*").eq("user_id", user.id).single().execute().data
     cards = supabase_admin.table("loyalty_cards_with_merchants").select("*").eq("user_id", user.id).execute().data
+    # BULLETPROOF: Map cards in the export payload
     return {
         "status": "success",
         "export_date": datetime.now(timezone.utc).isoformat(),
         "user": profile,
-        "loyalty_cards": cards
+        "loyalty_cards": [format_card(c) for c in cards]
     }
 
 app.include_router(api_router)
 
 if __name__ == "__main__":
     import uvicorn
+    # Final production port symmetry
     uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
