@@ -79,18 +79,26 @@ async def root():
 
 api_router = APIRouter(prefix="/api")
 
+# --- DIAGNOSTICS ---
+@api_router.get("/health")
+async def health_check():
+    """Endpoint for Railway Healthcheck"""
+    return {
+        "status": "healthy",
+        "db_connected": supabase is not None,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
 # --- AUTHENTICATION ---
 @api_router.post("/auth/signup")
 async def signup(data: SignupRequest):
     try:
-        # 1. Create Auth User
         res = supabase.auth.sign_up({
             "email": data.email, 
             "password": data.password,
             "options": {"data": {"full_name": data.full_name, "username": data.username}}
         })
         if res.user:
-            # 2. Sync to Public Table (Admin bypass RLS)
             supabase_admin.table("users").upsert({
                 "user_id": res.user.id,
                 "email": data.email,
@@ -129,7 +137,6 @@ async def get_merchants():
 
 @api_router.get("/merchants-grouped")
 async def get_merchants_grouped(search: Optional[str] = None, favorites_only: bool = False, user=Depends(get_current_user)):
-    # Complex query joining cards and merchants for the "My Wallet" view
     query = supabase_admin.table("loyalty_cards_with_merchants").select("*").eq("user_id", user.id)
     if search:
         query = query.ilike("card_name", f"%{search}%")
@@ -138,7 +145,6 @@ async def get_merchants_grouped(search: Optional[str] = None, favorites_only: bo
     
     cards = query.execute().data
     
-    # Group by merchant as expected by the frontend
     grouped: Dict[str, Any] = {}
     for c in cards:
         m_id = c["merchant_id"]
