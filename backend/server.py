@@ -58,10 +58,7 @@ except Exception as e:
 
 # --- BULLETPROOF HELPER: DATA MAPPING ---
 def format_card(card: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Expert Mapper: Translates Database 'id' to Frontend 'card_id'.
-    Ensures React Native keys are unique and navigation works.
-    """
+    """Expert Mapper: Translates Database 'id' to Frontend 'card_id'"""
     if not card: return card
     formatted = {**card}
     if "id" in card:
@@ -94,11 +91,7 @@ api_router = APIRouter(prefix="/api")
 # --- DIAGNOSTICS ---
 @api_router.get("/health")
 async def health_check():
-    return {
-        "status": "healthy", 
-        "db_connected": supabase is not None,
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }
+    return {"status": "healthy", "db_connected": supabase is not None}
 
 # --- AUTHENTICATION ---
 @api_router.post("/auth/signup")
@@ -175,13 +168,7 @@ async def get_merchants_grouped(search: Optional[str] = None, favorites_only: bo
 # --- LOYALTY CARDS ---
 @api_router.get("/cards/quick")
 async def get_quick_cards(user=Depends(get_current_user)):
-    """Fetch favorite cards for the Quick Access horizontal scroll"""
-    res = supabase_admin.table("loyalty_cards_with_merchants")\
-        .select("*")\
-        .eq("user_id", user.id)\
-        .eq("is_favorite", True)\
-        .limit(10)\
-        .execute()
+    res = supabase_admin.table("loyalty_cards_with_merchants").select("*").eq("user_id", user.id).eq("is_favorite", True).limit(10).execute()
     return [format_card(c) for c in res.data]
 
 @api_router.get("/cards")
@@ -191,14 +178,7 @@ async def get_cards(user=Depends(get_current_user)):
 
 @api_router.get("/cards/{card_id}")
 async def get_card(card_id: str, user=Depends(get_current_user)):
-    """Fetch a single specific card (Fixes 405 error on Detail Screen)"""
-    res = supabase_admin.table("loyalty_cards_with_merchants")\
-        .select("*")\
-        .eq("id", card_id)\
-        .eq("user_id", user.id)\
-        .single()\
-        .execute()
-    
+    res = supabase_admin.table("loyalty_cards_with_merchants").select("*").eq("id", card_id).eq("user_id", user.id).single().execute()
     if not res.data:
         raise HTTPException(status_code=404, detail="Card not found")
     return format_card(res.data)
@@ -212,15 +192,21 @@ async def create_card(card: CardCreate, user=Depends(get_current_user)):
 
 @api_router.put("/cards/{card_id}")
 async def update_card(card_id: str, updates: Dict[str, Any], user=Depends(get_current_user)):
-    """Update card safely by stripping primary keys from body"""
-    # Prevent primary key overwrite errors
-    safe_updates = {k: v for k, v in updates.items() if k not in ["id", "card_id", "user_id"]}
-    res = supabase_admin.table("loyalty_cards")\
-        .update(safe_updates)\
-        .eq("id", card_id)\
-        .eq("user_id", user.id)\
-        .execute()
-    return {"status": "success", "data": format_card(res.data[0])}
+    """Update card safely by strictly filtering allowed columns"""
+    allowed_columns = ["merchant_id", "card_name", "barcode", "notes", "is_favorite", "image_base64"]
+    safe_updates = {k: v for k, v in updates.items() if k in allowed_columns}
+    
+    if not safe_updates:
+        raise HTTPException(status_code=400, detail="No valid update fields provided")
+
+    try:
+        res = supabase_admin.table("loyalty_cards").update(safe_updates).eq("id", card_id).eq("user_id", user.id).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Card not found")
+        return {"status": "success", "data": format_card(res.data[0])}
+    except Exception as e:
+        logger.error(f"Update error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.delete("/cards/{card_id}")
 async def delete_card(card_id: str, user=Depends(get_current_user)):
