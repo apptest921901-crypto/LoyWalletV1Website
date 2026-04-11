@@ -82,12 +82,7 @@ api_router = APIRouter(prefix="/api")
 # --- DIAGNOSTICS ---
 @api_router.get("/health")
 async def health_check():
-    """Endpoint for Railway Healthcheck"""
-    return {
-        "status": "healthy",
-        "db_connected": supabase is not None,
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }
+    return {"status": "healthy", "db_connected": supabase is not None}
 
 # --- AUTHENTICATION ---
 @api_router.post("/auth/signup")
@@ -162,6 +157,17 @@ async def get_merchants_grouped(search: Optional[str] = None, favorites_only: bo
     return list(grouped.values())
 
 # --- LOYALTY CARDS ---
+@api_router.get("/cards/quick")
+async def get_quick_cards(user=Depends(get_current_user)):
+    """Fetch favorite cards for the Quick Access horizontal scroll"""
+    res = supabase_admin.table("loyalty_cards_with_merchants")\
+        .select("*")\
+        .eq("user_id", user.id)\
+        .eq("is_favorite", True)\
+        .limit(10)\
+        .execute()
+    return res.data
+
 @api_router.get("/cards")
 async def get_cards(user=Depends(get_current_user)):
     res = supabase_admin.table("loyalty_cards_with_merchants").select("*").eq("user_id", user.id).execute()
