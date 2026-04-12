@@ -18,7 +18,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
-import { cardAPI, Stats, api } from '../../utils/api';
+import { cardAPI, Stats } from '../../utils/api';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -133,7 +133,7 @@ export default function ProfileScreen() {
                   style: 'destructive', 
                   onPress: async () => {
                     try {
-                      await api.delete('profile');
+                      await cardAPI.deleteProfile();
                       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                       Alert.alert('Account Deleted', 'Your account has been deleted successfully.');
                       signOut();
@@ -155,8 +155,8 @@ export default function ProfileScreen() {
       setIsExporting(true);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       
-      const response = await api.get('profile/export');
-      const dataStr = JSON.stringify(response.data, null, 2);
+      const data = await cardAPI.exportData();
+      const dataStr = JSON.stringify(data, null, 2);
       
       setIsExporting(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -194,7 +194,6 @@ export default function ProfileScreen() {
       setIsExporting(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       
-      // EXPERT DEBUG: Extract real error from server response
       const serverError = error.response?.data?.detail || error.message || 'Unknown error';
       console.error('Export Error Detail:', serverError);
       
