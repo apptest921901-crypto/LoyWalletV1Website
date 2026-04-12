@@ -10,8 +10,6 @@ const api = axios.create({
   },
 });
 
-// Expert Fix: Remove the async Supabase call from the interceptor to prevent deadlocks.
-// We will now inject the token from AuthContext directly into the axios defaults.
 export const setApiToken = (token: string | null) => {
   if (token) {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -20,7 +18,6 @@ export const setApiToken = (token: string | null) => {
   }
 };
 
-// Response Interceptor: Handle 401 Unauthorized globally
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -75,17 +72,14 @@ export const cardAPI = {
     const response = await api.get<Card[]>('cards');
     return response.data;
   },
-  // Added missing getCard function
   getCard: async (cardId: string) => {
     const response = await api.get<Card>(`cards/${cardId}`);
     return response.data;
   },
-  // Added missing updateCard function
   updateCard: async (cardId: string, updates: Partial<Card>) => {
     const response = await api.put<{status: string}>(`cards/${cardId}`, updates);
     return response.data;
   },
-  // Added missing deleteCard function
   deleteCard: async (cardId: string) => {
     const response = await api.delete<{status: string}>(`cards/${cardId}`);
     return response.data;
@@ -108,6 +102,14 @@ export const cardAPI = {
     const response = await api.put(`cards/${cardId}/favorite`, null, {
       params: { is_favorite: isFavorite },
     });
+    return response.data;
+  },
+  exportData: async () => {
+    const response = await api.get('profile/export');
+    return response.data;
+  },
+  deleteProfile: async () => {
+    const response = await api.delete('profile');
     return response.data;
   }
 };

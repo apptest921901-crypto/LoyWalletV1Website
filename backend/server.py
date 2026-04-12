@@ -58,7 +58,6 @@ except Exception as e:
 
 # --- BULLETPROOF HELPER: DATA MAPPING ---
 def format_card(card: Dict[str, Any]) -> Dict[str, Any]:
-    """Expert Mapper: Translates Database 'id' to Frontend 'card_id'"""
     if not card: return card
     formatted = {**card}
     if "id" in card:
@@ -88,7 +87,6 @@ async def root():
 
 api_router = APIRouter(prefix="/api")
 
-# --- DIAGNOSTICS ---
 @api_router.get("/health")
 async def health_check():
     return {"status": "healthy", "db_connected": supabase is not None}
@@ -132,6 +130,18 @@ async def get_profile(user=Depends(get_current_user)):
 async def update_profile(data: ProfileUpdate, user=Depends(get_current_user)):
     res = supabase_admin.table("users").update(data.dict(exclude_unset=True)).eq("user_id", user.id).execute()
     return res.data[0]
+
+@api_router.delete("/profile")
+async def delete_profile(user=Depends(get_current_user)):
+    """GDPR: Permanently delete user account and all associated data"""
+    try:
+        # Deleting from auth.users triggers cascading delete for public.users and loyalty_cards
+        supabase_admin.auth.admin.delete_user(user.id)
+        logger.info(f"User {user.id} deleted successfully")
+        return {"status": "success"}
+    except Exception as e:
+        logger.error(f"Delete account error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete account")
 
 # --- MERCHANTS ---
 @api_router.get("/merchants")
@@ -192,7 +202,6 @@ async def create_card(card: CardCreate, user=Depends(get_current_user)):
 
 @api_router.put("/cards/{card_id}")
 async def update_card(card_id: str, updates: Dict[str, Any], user=Depends(get_current_user)):
-    """Update card safely by strictly filtering allowed columns"""
     allowed_columns = ["merchant_id", "card_name", "barcode", "notes", "is_favorite", "image_base64"]
     safe_updates = {k: v for k, v in updates.items() if k in allowed_columns}
     
