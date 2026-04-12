@@ -15,7 +15,7 @@ import {
   Dimensions,
   BackHandler,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -30,6 +30,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 export default function CardDetailScreen() {
   const { id, scannedBarcode, showBarcode } = useLocalSearchParams<{ id: string, scannedBarcode?: string, showBarcode?: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   
   const [card, setCard] = useState<Card | null>(null);
   const [merchants, setMerchants] = useState<Merchant[]>([]);
@@ -309,7 +310,7 @@ export default function CardDetailScreen() {
           </View>
         </ScrollView>
 
-        <View style={styles.footer}>
+        <View style={[styles.footer, { paddingBottom: Math.max(20, insets.bottom) }]}>
           {editing ? (
             <View style={styles.row}>
               <TouchableOpacity style={styles.btnSec} onPress={() => { setEditing(false); setEditedCard(card); }}><Text>Cancel</Text></TouchableOpacity>
@@ -317,7 +318,7 @@ export default function CardDetailScreen() {
             </View>
           ) : (
             <View style={styles.row}>
-              <TouchableOpacity style={[styles.btnSec, {flex: 1}]} onPress={() => {
+              <TouchableOpacity style={[styles.btnSec, { flex: 1 }]} onPress={() => {
                 // Ensure editedCard has all current card data including barcode
                 setEditedCard({
                   ...card,
@@ -330,7 +331,7 @@ export default function CardDetailScreen() {
                 });
                 setEditing(true);
               }}><Ionicons name="create-outline" size={20} color="#007AFF" /><Text style={styles.btnSecTextBlue}>Edit</Text></TouchableOpacity>
-              <TouchableOpacity style={[styles.btnSec, {flex: 1}]} onPress={handleDelete}><Ionicons name="trash-outline" size={20} color="#FF3B30" /><Text style={styles.btnSecTextRed}>Delete</Text></TouchableOpacity>
+              <TouchableOpacity style={[styles.btnSec, { flex: 1 }]} onPress={handleDelete}><Ionicons name="trash-outline" size={20} color="#FF3B30" /><Text style={styles.btnSecTextRed}>Delete</Text></TouchableOpacity>
             </View>
           )}
         </View>
