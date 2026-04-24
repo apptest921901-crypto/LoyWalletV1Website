@@ -1,23 +1,10 @@
 <!doctype html>
-<html lang="en" class="h-full">
+<html lang="fr" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LoyWallet - Digital Loyalty Card Wallet App | Store All Rewards Cards in One Place</title>
-    <script>
-      // Automatic Language Detection & Redirection
-      (function() {
-        const userPref = localStorage.getItem('preferred_lang');
-        const browserLang = navigator.language || navigator.userLanguage;
-        
-        // If user hasn't manually picked a language and browser is French
-        if (!userPref && browserLang.startsWith('fr')) {
-          localStorage.setItem('preferred_lang', 'fr');
-          window.location.href = 'fr/index.html';
-        }
-      })();
-    </script>
-    <meta name="description" content="LoyWallet is the #1 digital loyalty card wallet app. Store all your rewards cards, earn points faster, and never lose a loyalty card again. Download free for iOS &amp; Android.">
+    <title>LoyWallet - Vos cartes de fidélité dans un seul portefeuille numérique | Gérez toutes vos récompenses</title>
+    <meta name="description" content="LoyWallet est l'application n°1 de portefeuille numérique pour cartes de fidélité. Stockez toutes vos cartes de récompenses, gagnez des points plus rapidement et ne perdez plus jamais une carte. Gratuit sur iOS & Android.">
     <meta name="keywords" content="loyalty card app, digital wallet, rewards cards, loyalty program, mobile wallet, store cards, earn points, cashback rewards">
     <meta property="og:title" content="LoyWallet - All Your Loyalty Cards in One Digital Wallet">
     <meta property="og:description" content="Join 2M+ users earning more rewards. Store all loyalty cards digitally and never miss points again. Free for iOS &amp; Android.">
@@ -61,7 +48,7 @@
     </script>
     <!-- ADD EMAILJS SDK -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <script src="_sdk/element_sdk.js"></script>
+    <script src="../_sdk/element_sdk.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
@@ -134,7 +121,7 @@
         }
     </style>
     <style>@view-transition { navigation: auto; }</style>
-    <script src="_sdk/data_sdk.js" type="text/javascript"></script>
+    <!-- <script src="../_sdk/data_sdk.js" type="text/javascript"></script> -->
     <style>@view-transition { navigation: auto; }</style>
 </head>
 <body class="h-full">
@@ -148,23 +135,23 @@
                     <svg width="32" height="32" viewbox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
                     </svg>
                 </div>
-                <h3 id="waitlist-title" class="text-2xl font-bold text-gray-800 mb-2">Join the Waitlist</h3>
-                <p id="waitlist-desc" class="text-gray-600">Get exclusive early access when we launch in Q1 2026</p>
+                <h3 id="waitlist-title" class="text-2xl font-bold text-gray-800 mb-2">Rejoindre la liste d'attente</h3>
+                <p id="waitlist-desc" class="text-gray-600">Bénéficiez d'un accès anticipé exclusif lors de notre lancement au Q1 2026</p>
             </div>
             <form id="waitlist-form" onsubmit="submitWaitlist(event)" class="space-y-4">
-                <div><label for="waitlist-name" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label> <input type="text" id="waitlist-name" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="John Doe">
+                <div><label for="waitlist-name" class="block text-sm font-medium text-gray-700 mb-2">Nom Complet</label> <input type="text" id="waitlist-name" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Jean Dupont">
                 </div>
-                <div><label for="waitlist-email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label> <input type="email" id="waitlist-email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="john@example.com">
-                </div><button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition-all shadow-lg"> Join Waitlist </button>
-                <p class="text-xs text-gray-500 text-center">We'll notify you as soon as we launch. No spam, ever.</p>
+                <div><label for="waitlist-email" class="block text-sm font-medium text-gray-700 mb-2">Adresse Email</label> <input type="email" id="waitlist-email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="jean@exemple.fr">
+                </div><button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition-all shadow-lg"> Rejoindre </button>
+                <p class="text-xs text-gray-500 text-center">Nous vous avertirons dès notre lancement. Pas de spam, jamais.</p>
             </form>
             <div id="success-message" class="hidden text-center py-8">
                 <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
                     <svg width="32" height="32" viewbox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M20 6L9 17l-5-5" />
                     </svg>
                 </div>
-                <h4 class="text-xl font-bold text-gray-800 mb-2">You're on the list!</h4>
-                <p class="text-gray-600">We'll send you an email when we launch.</p>
+                <h4 class="text-xl font-bold text-gray-800 mb-2">Vous êtes sur la liste !</h4>
+                <p class="text-gray-600">Nous vous enverrons un e-mail dès notre lancement.</p>
             </div>
         </div>
     </div><!-- ============================================ --> <!-- SECTION 1: NAVIGATION & HEADER --> <!-- Navigation -->
@@ -174,24 +161,31 @@
                 <div class="flex items-center gap-2 cursor-pointer" onclick="document.getElementById('app-wrapper').scrollTo({top: 0, behavior: 'smooth'})" title="Back to top">
                     <div id="nav-logo-bg" class="w-10 h-10 rounded-xl flex items-center justify-center bg-white shadow-lg p-0.5 transition-all">
                         <!-- ============================================ --> <!-- SECTION 0: Logo Start-->
-                        <img src="assets/LogoLoyWalletV1.svg" alt="LoyWallet Logo" class="w-full h-full object-contain" loading="lazy" onerror="console.error('Image failed to load:', this.src); this.style.background='linear-gradient(135deg, #7c3aed 0%, #db2777 100%)'; this.alt='LoyWallet';">
+                        <img src="../assets/LogoLoyWalletV1.svg" alt="LoyWallet Logo" class="w-full h-full object-contain" loading="lazy" onerror="console.error('Image failed to load:', this.src); this.style.background='linear-gradient(135deg, #7c3aed 0%, #db2777 100%)'; this.alt='LoyWallet';">
                         <!-- ============================================ --> <!-- SECTION 0: Logo End -->
                     </div><span id="nav-brand" class="text-xl font-extrabold text-white transition-colors">LoyWallet</span>
                 </div>
                 <div id="nav-links" class="hidden md:flex items-center gap-8">
-                    <a href="#features" class="text-white hover:text-white transition-colors font-medium">Features</a>
-                    <a href="#how-it-works" class="text-white hover:text-white transition-colors font-medium">How It Works</a>
-                    <a href="#testimonials" class="text-white hover:text-white transition-colors font-medium">Reviews</a>
-                    <a href="about.html" class="text-white hover:text-white transition-colors font-medium">About Us</a>
+                    <a href="#features" class="text-white hover:text-white transition-colors font-medium">Fonctionnalités</a>
+                    <a href="#how-it-works" class="text-white hover:text-white transition-colors font-medium">Comment ça marche</a>
+                    <a href="#testimonials" class="text-white hover:text-white transition-colors font-medium">Avis</a>
+                    <a href="about.html" class="text-white hover:text-white transition-colors font-medium">À propos</a>
                     <a href="#faq" class="text-white hover:text-white transition-colors font-medium">FAQ</a>
                     <a href="#contact" class="text-white hover:text-white transition-colors font-medium">Contact</a>
-                    <a href="#download" class="bg-white text-purple-600 px-6 py-2.5 rounded-full font-semibold hover:bg-white/90 transition-all shadow-lg">Join Waitlist</a>
-                    <a href="fr/index.html" onclick="localStorage.setItem('preferred_lang', 'fr')" class="text-white/70 hover:text-white transition-colors font-bold border border-white/20 px-3 py-1 rounded-lg text-sm">FR</a>
+                    <a href="#download" class="bg-white text-purple-600 px-6 py-2.5 rounded-full font-semibold hover:bg-white/90 transition-all shadow-lg">Rejoindre</a>
+                    <a href="../index.html" onclick="localStorage.setItem('preferred_lang', 'en')" class="text-white/70 hover:text-white transition-colors font-bold border border-white/20 px-3 py-1 rounded-lg text-sm">EN</a>
                 </div><button id="mobile-menu-btn" class="md:hidden text-white p-2" onclick="toggleMobileMenu()">
                 <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18" />
                 </svg></button>
             </div>
-            <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 space-y-3"><a href="#features" class="block text-white/80 hover:text-white transition-colors font-medium py-2">Features</a> <a href="#how-it-works" class="block text-white/80 hover:text-white transition-colors font-medium py-2">How It Works</a> <a href="#testimonials" class="block text-white/80 hover:text-white transition-colors font-medium py-2">Reviews</a> <a href="about.html" class="block text-white/80 hover:text-white transition-colors font-medium py-2">About Us</a> <a href="#faq" class="block text-white/80 hover:text-white transition-colors font-medium py-2">FAQ</a> <a href="#contact" class="block text-white/80 hover:text-white transition-colors font-medium py-2">Contact</a> <a href="#download" class="block bg-white text-purple-600 px-6 py-2.5 rounded-full font-semibold text-center hover:bg-white/90 transition-all shadow-lg mt-4">Join Waitlist</a>
+            <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 space-y-3">
+                <a href="#features" class="block text-white/80 hover:text-white transition-colors font-medium py-2">Fonctionnalités</a>
+                <a href="#how-it-works" class="block text-white/80 hover:text-white transition-colors font-medium py-2">Comment ça marche</a>
+                <a href="#testimonials" class="block text-white/80 hover:text-white transition-colors font-medium py-2">Avis</a>
+                <a href="about.html" class="block text-white/80 hover:text-white transition-colors font-medium py-2">À propos</a>
+                <a href="#faq" class="block text-white/80 hover:text-white transition-colors font-medium py-2">FAQ</a>
+                <a href="#contact" class="block text-white/80 hover:text-white transition-colors font-medium py-2">Contact</a>
+                <a href="#download" class="block bg-white text-purple-600 px-6 py-2.5 rounded-full font-semibold text-center hover:bg-white/90 transition-all shadow-lg mt-4">Rejoindre</a>
             </div>
         </div>
     </nav><!-- Trust Bar -->
@@ -201,13 +195,13 @@
                 <div class="flex items-center gap-2">
                     <svg width="16" height="16" viewbox="0 0 24 24" fill="currentColor">
                         <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                    </svg><span class="font-semibold">Pre-Launch Beta</span>
+                    </svg><span class="font-semibold">Bêta pré-lancement</span>
                 </div>
                 <div class="hidden md:block w-px h-4 bg-white/30"></div>
-                <div class="flex items-center gap-2"><span class="font-semibold">500+ Supported Stores</span>
+                <div class="flex items-center gap-2"><span class="font-semibold">+500 Enseignes Supportées</span>
                 </div>
                 <div class="hidden md:block w-px h-4 bg-white/30"></div>
-                <div class="flex items-center gap-2"><span class="font-semibold">Launch Q1 2026</span>
+                <div class="flex items-center gap-2"><span class="font-semibold">Lancement Q1 2026</span>
                 </div>
             </div>
         </div>
@@ -215,23 +209,23 @@
     <section class="w-full px-6 py-12 md:py-20">
         <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
             <div class="text-center md:text-left">
-                <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur px-4 py-2 rounded-full mb-6"><span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span> <span class="text-white/90 text-sm font-medium">🚀 Launching Q1 2026 • Join the Waitlist</span>
+                <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur px-4 py-2 rounded-full mb-6"><span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span> <span class="text-white/90 text-sm font-medium">🚀 Lancement Q1 2026 • Rejoignez la liste d'attente</span>
                 </div>
                 <p class="text-blue-400 text-sm font-bold uppercase mb-2" style="letter-spacing: 0.15rem;">LOYWALLET</p>
-                <h1 id="hero-title" class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-6"><span class="whitespace-nowrap">All Your Loyalty Cards,</span><br><span class="whitespace-nowrap">One Digital Wallet</span></h1>
-                <p id="hero-subtitle" class="text-xl text-white/80 mb-8 leading-relaxed">Store unlimited cards, earn rewards faster, and never forget your card at checkout again. Completely free.</p><!-- Key Benefits Pills -->
-                <div class="flex flex-wrap gap-3 mb-8"><span class="bg-white/15 backdrop-blur px-4 py-2 rounded-full text-white text-sm font-medium">✓ Unlimited Cards</span> <span class="bg-white/15 backdrop-blur px-4 py-2 rounded-full text-white text-sm font-medium">✓ Works Offline</span> <span class="bg-white/15 backdrop-blur px-4 py-2 rounded-full text-white text-sm font-medium">✓ Secure &amp; Private</span>
+                <h1 id="hero-title" class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-6"><span class="whitespace-nowrap">Toutes vos cartes,</span><br><span class="whitespace-nowrap">Un seul portefeuille numérique</span></h1>
+                <p id="hero-subtitle" class="text-xl text-white/80 mb-8 leading-relaxed">Stockez un nombre illimité de cartes, gagnez des récompenses plus rapidement et n'oubliez plus jamais votre carte en caisse. Entièrement gratuit.</p><!-- Key Benefits Pills -->
+                <div class="flex flex-wrap gap-3 mb-8"><span class="bg-white/15 backdrop-blur px-4 py-2 rounded-full text-white text-sm font-medium">✓ Cartes illimitées</span> <span class="bg-white/15 backdrop-blur px-4 py-2 rounded-full text-white text-sm font-medium">✓ Mode hors ligne</span> <span class="bg-white/15 backdrop-blur px-4 py-2 rounded-full text-white text-sm font-medium">✓ Sécurisé &amp; Privé</span>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start mb-8"><button onclick="showWaitlistModal()" class="group flex items-center justify-center gap-3 bg-white text-purple-600 px-8 py-4 rounded-2xl hover:bg-gray-100 transition-all shadow-xl hover:shadow-2xl hover:scale-105 font-bold text-lg">
                     <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-                    </svg><span>Join the Waitlist</span> </button> <button onclick="showNotifyModal()" class="group flex items-center justify-center gap-3 bg-white/10 backdrop-blur text-white px-8 py-4 rounded-2xl hover:bg-white/20 transition-all shadow-xl border border-white/20 font-semibold">
+                    </svg><span>Rejoindre la liste d'attente</span> </button> <button onclick="showNotifyModal()" class="group flex items-center justify-center gap-3 bg-white/10 backdrop-blur text-white px-8 py-4 rounded-2xl hover:bg-white/20 transition-all shadow-xl border border-white/20 font-semibold">
                     <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
-                    </svg><span>Notify Me at Launch</span> </button>
+                    </svg><span>M'avertir au lancement</span> </button>
                 </div>
                 <div class="flex items-center gap-2 text-white/70 text-sm justify-center md:justify-start">
                     <svg width="16" height="16" viewbox="0 0 24 24" fill="currentColor">
                         <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
-                    </svg><span>No credit card required • Instant setup</span>
+                    </svg><span>Pas de carte de crédit requise • Installation instantanée</span>
                 </div>
             </div><!-- Phone Mockup -->
             <div class="relative flex justify-center">
@@ -251,12 +245,12 @@
                                 <div class="flex flex-col items-center pt-3 pb-2">
                                     <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl mb-2 overflow-hidden bg-gradient-to-br from-purple-50 to-white p-0.5 border border-purple-100">
                                         <!--============================================ --> <!-- SECTION 0: Logo Start-->
-                                        <img src="assets/LogoLoyWalletV1.svg" alt="LoyWallet Logo" class="w-full h-full object-contain" loading="lazy" onerror="console.error('Image failed to load:', this.src); this.style.background='linear-gradient(135deg, #7c3aed 0%, #db2777 100%)'; this.alt='LoyWallet';">
+                                        <img src="../assets/LogoLoyWalletV1.svg" alt="LoyWallet Logo" class="w-full h-full object-contain" loading="lazy" onerror="console.error('Image failed to load:', this.src); this.style.background='linear-gradient(135deg, #7c3aed 0%, #db2777 100%)'; this.alt='LoyWallet';">
                                         <!--============================================ --> <!-- SECTION 0: Logo End -->
                                     </div><span class="text-sm font-bold text-gray-800">LoyWallet</span>
                                 </div>
-                                <h3 class="text-lg font-bold text-gray-800 mb-1">My Cards</h3>
-                                <p class="text-xs text-gray-500 mb-4">5 cards</p>
+                                <h3 class="text-lg font-bold text-gray-800 mb-1">Mes Cartes</h3>
+                                <p class="text-xs text-gray-500 mb-4">5 cartes</p>
                                 <div class="relative h-48 mt-2">
                                     <div class="absolute top-0 left-2 right-2 h-28 bg-gradient-to-br from-emerald-700 to-emerald-600 rounded-xl shadow-lg card-stack p-3">
                                         <div class="flex items-center gap-2 mb-1">
@@ -268,10 +262,10 @@
                                             </div>
                                         </div>
                                         <div class="text-white/80 text-xs mt-1">
-                                            ⭐⭐⭐ Gold Member
+                                            ⭐⭐⭐ Membre Gold
                                         </div>
                                         <div class="absolute bottom-3 right-3 text-white/90 text-xs">
-                                            2,450 pts
+                                            2 450 pts
                                         </div>
                                     </div>
                                     <div class="absolute top-8 left-0 right-0 h-28 bg-gradient-to-br from-blue-700 to-red-600 rounded-xl shadow-lg card-stack-2 p-3">
@@ -312,13 +306,13 @@
                                         <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-0.5">
                                             <svg width="16" height="16" viewbox="0 0 24 24" fill="#7c3aed"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                                             </svg>
-                                        </div><span class="text-xs text-gray-600">Add</span>
+                                        </div><span class="text-xs text-gray-600">Ajouter</span>
                                     </div>
                                     <div class="text-center flex-1 px-1">
                                         <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-0.5">
                                             <svg width="16" height="16" viewbox="0 0 24 24" fill="#7c3aed"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
                                             </svg>
-                                        </div><span class="text-xs text-gray-600">Search</span>
+                                        </div><span class="text-xs text-gray-600">Recherche</span>
                                     </div>
                                     <div class="text-center flex-1 px-1">
                                         <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-0.5">
@@ -338,7 +332,7 @@
                             </div>
                             <div>
                                 <div class="text-xs font-bold text-gray-800 mb-1">
-                                    Card Added!
+                                    Carte Ajoutée !
                                 </div>
                                 <div class="text-xs text-gray-500">
                                     Starbucks Gold
@@ -358,7 +352,7 @@
                         500+
                     </div>
                     <div class="text-white/70 text-sm md:text-base">
-                        Supported Store Chains
+                        Enseignes Partenaires
                     </div>
                 </div>
                 <div class="text-center">
@@ -366,15 +360,15 @@
                         Q1 2026
                     </div>
                     <div class="text-white/70 text-sm md:text-base">
-                        Expected Launch Date
+                        Date de Lancement
                     </div>
                 </div>
                 <div class="text-center">
                     <div class="text-4xl md:text-5xl font-extrabold text-white mb-2">
-                        Unlimited
+                        Illimité
                     </div>
                     <div class="text-white/70 text-sm md:text-base">
-                        Cards You Can Store
+                        Cartes Stockables
                     </div>
                 </div>
                 <div class="text-center">
@@ -382,7 +376,7 @@
                         100%
                     </div>
                     <div class="text-white/70 text-sm md:text-base">
-                        Free
+                        Gratuit
                     </div>
                 </div>
             </div>
@@ -391,10 +385,10 @@
     <section id="features" class="w-full px-6 py-20">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
-                <div class="inline-block bg-white/10 backdrop-blur px-4 py-2 rounded-full mb-4"><span class="text-white/90 text-sm font-medium">POWERFUL FEATURES</span>
+                <div class="inline-block bg-white/10 backdrop-blur px-4 py-2 rounded-full mb-4"><span class="text-white/90 text-sm font-medium">FONCTIONNALITÉS PUISSANTES</span>
                 </div>
-                <h2 id="features_title" class="text-3xl md:text-5xl font-bold text-white mb-4">Everything You Need to Simplify Loyalty</h2>
-                <p class="text-white/70 text-lg max-w-3xl mx-auto">A complete digital wallet designed to maximize your rewards and minimize hassle</p>
+                <h2 id="features_title" class="text-3xl md:text-5xl font-bold text-white mb-4">Tout ce dont vous avez besoin pour simplifier votre fidélité</h2>
+                <p class="text-white/70 text-lg max-w-3xl mx-auto">Un portefeuille numérique complet conçu pour maximiser vos récompenses et minimiser les tracas</p>
             </div>
             <div class="grid md:grid-cols-3 gap-8">
                 <div class="glass-card rounded-3xl p-8 hover:bg-white/15 transition-all group">
@@ -402,10 +396,10 @@
                         <svg width="32" height="32" viewbox="0 0 24 24" fill="white"><path d="M3 5v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.11 0-2 .9-2 2zm12 4c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3zm-9 8c0-2 4-3.1 6-3.1s6 1.1 6 3.1v1H6v-1z" />
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Lightning-Fast Scanning</h3>
-                    <p class="text-white/70 leading-relaxed mb-4">Point and shoot. Our AI automatically detects barcodes and QR codes in under 1 second. No manual entry needed.</p>
+                    <h3 class="text-xl font-bold text-white mb-3">Scan Ultra-Rapide</h3>
+                    <p class="text-white/70 leading-relaxed mb-4">Visez et scannez. Notre IA détecte automatiquement les codes-barres et QR codes en moins d'une seconde. Aucune saisie manuelle requise.</p>
                     <div class="text-sm text-white/50">
-                        ✓ Works with 99.9% of card formats
+                        ✓ Fonctionne avec 99,9% des formats
                     </div>
                 </div>
                 <!-- HIDDEN: Smart Location Reminders
@@ -426,10 +420,10 @@
                          <svg width="32" height="32" viewbox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
                          </svg>
                      </div>
-                     <h3 class="text-xl font-bold text-white mb-3">500+ Supported Stores</h3>
-                     <p class="text-white/70 leading-relaxed mb-4">From Carrefour to Auchan, E.Leclerc to Intermarché, Super U to Sephora. Works with major loyalty programs.</p>
+                     <h3 class="text-xl font-bold text-white mb-3">Plus de 500 Enseignes</h3>
+                     <p class="text-white/70 leading-relaxed mb-4">De Carrefour à Auchan, E.Leclerc à Intermarché, Super U à Sephora. Compatible avec les plus grands programmes.</p>
                      <div class="text-sm text-white/50">
-                         ✓ New stores added weekly
+                         ✓ Nouvelles enseignes chaque semaine
                      </div>
                  </div>
                  <div class="glass-card rounded-3xl p-8 hover:bg-white/15 transition-all group">
@@ -437,10 +431,10 @@
                          <svg width="32" height="32" viewbox="0 0 24 24" fill="white"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
                          </svg>
                      </div>
-                     <h3 class="text-xl font-bold text-white mb-3">Family Card Sharing</h3>
-                     <p class="text-white/70 leading-relaxed mb-4">Share household cards with family. Everyone earns, everyone saves. Pool points for faster rewards.</p>
+                     <h3 class="text-xl font-bold text-white mb-3">Partage Familial</h3>
+                     <p class="text-white/70 leading-relaxed mb-4">Partagez vos cartes avec les membres de votre foyer. Tout le monde cumule, tout le monde économise.</p>
                      <div class="text-sm text-white/50">
-                         ✓ Up to 6 family members
+                         ✓ Jusqu'à 6 membres
                      </div>
                  </div>
              </div>
@@ -449,10 +443,10 @@
     <section id="testimonials" class="w-full px-6 py-20 bg-white/5 backdrop-blur-lg">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
-                <div class="inline-block bg-white/10 backdrop-blur px-4 py-2 rounded-full mb-4"><span class="text-white/90 text-sm font-medium">BETA TESTER FEEDBACK</span>
+                <div class="inline-block bg-white/10 backdrop-blur px-4 py-2 rounded-full mb-4"><span class="text-white/90 text-sm font-medium">RETOURS DES BÊTA-TESTEURS</span>
                 </div>
-                <h2 id="testimonials_title" class="text-3xl md:text-5xl font-bold text-white mb-4">What Our Beta Testers Are Saying</h2>
-                <p class="text-white/70 text-lg">Real feedback from our private beta program</p>
+                <h2 id="testimonials_title" class="text-3xl md:text-5xl font-bold text-white mb-4">Ce que disent nos utilisateurs</h2>
+                <p class="text-white/70 text-lg">Retours réels de notre programme bêta privé</p>
             </div>
             <div class="grid md:grid-cols-3 gap-6"><!-- Testimonial 1 -->
                 <div class="bg-white rounded-3xl p-8 shadow-xl testimonial-card">
@@ -473,7 +467,7 @@
                             <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                         </svg>
                     </div>
-                    <p class="text-gray-700 mb-6 leading-relaxed">"This beta is incredibly polished! Can't wait for the public launch so I can recommend it to everyone."</p>
+                    <p class="text-gray-700 mb-6 leading-relaxed">"Cette version bêta est incroyablement soignée ! J'ai hâte que le lancement public arrive pour pouvoir le recommander à tout le monde."</p>
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold">
                             SJ
@@ -506,7 +500,7 @@
                             <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                         </svg>
                     </div>
-                    <p class="text-gray-700 mb-6 leading-relaxed">"I've tested lots of apps and this is the smoothest onboarding I've ever seen. Added 10 cards in 2 minutes!"</p>
+                    <p class="text-gray-700 mb-6 leading-relaxed">"J'ai testé beaucoup d'applications et c'est l'expérience la plus fluide que j'aie vue. J'ai ajouté 10 cartes en 2 minutes !"</p>
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-full flex items-center justify-center text-white font-bold">
                             MC
@@ -539,7 +533,7 @@
                             <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                         </svg>
                     </div>
-                    <p class="text-gray-700 mb-6 leading-relaxed">"Finally, a loyalty app that actually works the way I need it to! The family sharing feature is a game-changer."</p>
+                    <p class="text-gray-700 mb-6 leading-relaxed">"Enfin une application de fidélité qui fonctionne comme j'en ai besoin ! Le partage familial change tout."</p>
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-400 rounded-full flex items-center justify-center text-white font-bold">
                             EP
@@ -572,7 +566,7 @@
                             <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                         </svg>
                     </div>
-                    <p class="text-gray-700 mb-6 leading-relaxed">"The offline mode is perfect for when I'm traveling. Already used it successfully at 3 different stores overseas!"</p>
+                    <p class="text-gray-700 mb-6 leading-relaxed">"Le mode hors ligne est parfait pour mes voyages. Je l'ai déjà utilisé avec succès dans 3 magasins différents à l'étranger !"</p>
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-400 rounded-full flex items-center justify-center text-white font-bold">
                             DM
@@ -605,7 +599,7 @@
                             <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                         </svg>
                     </div>
-                    <p class="text-gray-700 mb-6 leading-relaxed">"As someone who cares about security, the encryption features give me total peace of mind. Well done!"</p>
+                    <p class="text-gray-700 mb-6 leading-relaxed">"En tant que personne soucieuse de la sécurité, les fonctionnalités de chiffrement me donnent une totale tranquillité d'esprit. Bravo !"</p>
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 bg-gradient-to-br from-teal-400 to-blue-400 rounded-full flex items-center justify-center text-white font-bold">
                             JT
@@ -627,10 +621,10 @@
                         🚀
                     </div>
                     <div class="text-white font-semibold">
-                        Launching Q1 2026
+                        Lancement Q1 2026
                     </div>
                     <div class="text-white/60 text-sm">
-                        Sign up for early access
+                        Inscrivez-vous pour un accès anticipé
                     </div>
                 </div>
                 <div class="text-center">
@@ -638,10 +632,10 @@
                         🔐
                     </div>
                     <div class="text-white font-semibold">
-                        Secure &amp; Private
+                        Sécurisé & Privé
                     </div>
                     <div class="text-white/60 text-sm">
-                        Your Data Protected
+                        Vos données protégées
                     </div>
                 </div>
                 <div class="text-center">
@@ -650,10 +644,10 @@
                         </svg>
                     </div>
                     <div class="text-white font-semibold">
-                        Free
+                        Gratuit
                     </div>
                     <div class="text-white/60 text-sm">
-                        No Hidden Fees
+                        Aucun frais caché
                     </div>
                 </div>
                 <div class="text-center">
@@ -661,10 +655,10 @@
                         💯
                     </div>
                     <div class="text-white font-semibold">
-                        No Ads
+                        Sans Publicité
                     </div>
                     <div class="text-white/60 text-sm">
-                        Clean Experience
+                        Expérience fluide
                     </div>
                 </div>
             </div>
@@ -673,8 +667,8 @@
     <section id="stores" class="w-full px-6 py-20">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-5xl font-bold text-white mb-4">Works With 500+ Stores</h2>
-                <p class="text-white/70 text-lg">Your favorite brands are already on LoyWallet</p>
+                <h2 class="text-3xl md:text-5xl font-bold text-white mb-4">Compatible avec 500+ Enseignes</h2>
+                <p class="text-white/70 text-lg">Vos marques préférées sont déjà sur LoyWallet</p>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 <div class="bg-white rounded-2xl p-6 flex items-center justify-center h-24 shadow-lg hover:scale-105 transition-transform">
@@ -719,42 +713,42 @@
                 </div>
             </div>
             <div class="text-center mt-10">
-                <p class="text-white/70 text-lg">Can't find your store? <a href="#contact" class="text-white underline hover:text-white/80">Request it here</a></p>
+                <p class="text-white/70 text-lg">Vous ne trouvez pas votre enseigne ? <a href="#contact" class="text-white underline hover:text-white/80">Demandez-la ici</a></p>
             </div>
         </div>
     </section><!-- ============================================ --> <!-- SECTION 6: HOW IT WORKS --> <!-- ============================================ -->
     <section id="how-it-works" class="w-full px-6 py-20 bg-white/5 backdrop-blur-lg">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-5xl font-bold text-white mb-4">Get Started in 3 Easy Steps</h2>
-                <p class="text-white/70 text-lg">From download to earning rewards in under 2 minutes</p>
+                <h2 class="text-3xl md:text-5xl font-bold text-white mb-4">Commencez en 3 étapes simples</h2>
+                <p class="text-white/70 text-lg">Du téléchargement aux récompenses en moins de 2 minutes</p>
             </div>
             <div class="grid md:grid-cols-3 gap-12">
                 <div class="text-center">
                     <div class="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl"><span class="text-5xl font-extrabold text-white">1</span>
                     </div>
-                    <h3 class="text-2xl font-bold text-white mb-4">Download &amp; Sign Up</h3>
-                    <p class="text-white/70 leading-relaxed mb-4">Get the app free on iOS or Android. Create your account in 30 seconds with email, Google, or Apple.</p>
+                    <h3 class="text-2xl font-bold text-white mb-4">Téléchargez l'App</h3>
+                    <p class="text-white/70 leading-relaxed mb-4">Obtenez l'application gratuitement. Créez votre compte en 30 secondes avec Google, Apple ou Email.</p>
                     <div class="inline-block bg-white/10 backdrop-blur px-4 py-2 rounded-full text-white/80 text-sm">
-                        ⏱ Takes 30 seconds
+                        ⏱ En 30 secondes
                     </div>
                 </div>
                 <div class="text-center">
                     <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl"><span class="text-5xl font-extrabold text-white">2</span>
                     </div>
-                    <h3 class="text-2xl font-bold text-white mb-4">Scan Your Cards</h3>
-                    <p class="text-white/70 leading-relaxed mb-4">Point your camera at any barcode or QR code. Our AI instantly recognizes and saves your card.</p>
+                    <h3 class="text-2xl font-bold text-white mb-4">Scannez vos Cartes</h3>
+                    <p class="text-white/70 leading-relaxed mb-4">Pointez votre caméra vers n'importe quel code-barres. Notre IA reconnaît et enregistre instantanément votre carte.</p>
                     <div class="inline-block bg-white/10 backdrop-blur px-4 py-2 rounded-full text-white/80 text-sm">
-                        📷 1 second per card
+                        📷 1 seconde par carte
                     </div>
                 </div>
                 <div class="text-center">
                     <div class="w-24 h-24 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl"><span class="text-5xl font-extrabold text-white">3</span>
                     </div>
-                    <h3 class="text-2xl font-bold text-white mb-4">Earn Rewards</h3>
-                    <p class="text-white/70 leading-relaxed mb-4">Show your digital card at checkout. Watch your points and savings grow automatically.</p>
+                    <h3 class="text-2xl font-bold text-white mb-4">Gagnez des Points</h3>
+                    <p class="text-white/70 leading-relaxed mb-4">Présentez votre carte numérique en caisse. Accumulez des points et des économies automatiquement.</p>
                     <div class="inline-block bg-white/10 backdrop-blur px-4 py-2 rounded-full text-white/80 text-sm">
-                        💰 Start saving today
+                        💰 Économisez dès aujourd'hui
                     </div>
                 </div>
             </div>
@@ -765,8 +759,8 @@
                             💡
                         </div>
                         <div>
-                            <h4 class="text-xl font-bold text-white mb-2">Pro Tip</h4>
-                            <p class="text-white/80">Enable location reminders to get notified when you're near participating stores. This feature alone helps users earn 3x more rewards!</p>
+                            <h4 class="text-xl font-bold text-white mb-2">Conseil de Pro</h4>
+                            <p class="text-white/80">Activez les rappels de localisation pour être averti lorsque vous êtes à proximité d'un magasin partenaire. Cette fonctionnalité permet de cumuler 3x plus de récompenses !</p>
                         </div>
                     </div>
                 </div>
@@ -776,15 +770,15 @@
     <section id="faq" class="w-full px-6 py-20">
         <div class="max-w-4xl mx-auto">
             <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-5xl font-bold text-white mb-4">Frequently Asked Questions</h2>
-                <p class="text-white/70 text-lg">Everything you need to know about LoyWallet</p>
+                <h2 class="text-3xl md:text-5xl font-bold text-white mb-4">Foire Aux Questions</h2>
+                <p class="text-white/70 text-lg">Tout ce que vous devez savoir sur LoyWallet</p>
             </div>
             <div class="space-y-6">
-                <details class="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-6 group"><summary class="text-xl font-semibold text-white cursor-pointer list-none flex items-center justify-between"> <span>How much does LoyWallet cost?</span>
+                <details class="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-6 group"><summary class="text-xl font-semibold text-white cursor-pointer list-none flex items-center justify-between"> <span>Combien coûte LoyWallet ?</span>
                     <svg class="w-6 h-6 text-white/70 group-open:rotate-180 transition-transform" fill="none" viewbox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg></summary>
-                    <p class="text-white/70 mt-4 leading-relaxed">LoyWallet is completely free! Store unlimited loyalty cards, use all features, and enjoy the full experience at no cost. We believe everyone should have access to better loyalty card management without paying for it.</p>
+                    <p class="text-white/70 mt-4 leading-relaxed">LoyWallet est entièrement gratuit ! Stockez un nombre illimité de cartes de fidélité, utilisez toutes les fonctionnalités et profitez de l'expérience complète sans frais. Nous pensons que tout le monde devrait avoir accès à une meilleure gestion de ses cartes gratuitement.</p>
                 </details>
                 <!-- HIDDEN: How secure is my card data?
                 <details class="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-6 group"><summary class="text-xl font-semibold text-white cursor-pointer list-none flex items-center justify-between"> <span>How secure is my card data?</span>
@@ -794,11 +788,11 @@
                     <p class="text-white/70 mt-4 leading-relaxed">Your data is protected with industry-standard encryption. We never store your full card numbers, and all data is encrypted both in transit and at rest. You can also enable biometric authentication (Face ID/Touch ID) for an extra layer of security.</p>
                 </details>
                 -->
-                <details class="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-6 group"><summary class="text-xl font-semibold text-white cursor-pointer list-none flex items-center justify-between"> <span>Does LoyWallet work offline?</span>
+                <details class="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-6 group"><summary class="text-xl font-semibold text-white cursor-pointer list-none flex items-center justify-between"> <span>Est-ce que LoyWallet fonctionne hors ligne ?</span>
                     <svg class="w-6 h-6 text-white/70 group-open:rotate-180 transition-transform" fill="none" viewbox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg></summary>
-                    <p class="text-white/70 mt-4 leading-relaxed">Absolutely! All your cards are stored locally on your device, so you can access them anytime without an internet connection. You only need internet to initially add cards or sync across devices.</p>
+                    <p class="text-white/70 mt-4 leading-relaxed">Absolument ! Toutes vos cartes sont stockées localement sur votre appareil, vous pouvez donc y accéder à tout moment sans connexion Internet. Vous n'avez besoin d'Internet que pour ajouter initialement des cartes ou synchroniser entre vos appareils.</p>
                 </details>
                 <details class="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-6 group"><summary class="text-xl font-semibold text-white cursor-pointer list-none flex items-center justify-between"> <span>Can I use LoyWallet on multiple devices?</span>
                     <svg class="w-6 h-6 text-white/70 group-open:rotate-180 transition-transform" fill="none" viewbox="0 0 24 24" stroke="currentColor">
@@ -806,11 +800,11 @@
                     </svg></summary>
                     <p class="text-white/70 mt-4 leading-relaxed">Yes! Your cards automatically sync across all your devices when you sign in. You can use LoyWallet on both iPhone and Android devices.</p>
                 </details>
-                <details class="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-6 group"><summary class="text-xl font-semibold text-white cursor-pointer list-none flex items-center justify-between"> <span>What if a store doesn't accept digital cards?</span>
+                <details class="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-6 group"><summary class="text-xl font-semibold text-white cursor-pointer list-none flex items-center justify-between"> <span>Que faire si un magasin n'accepte pas les cartes numériques ?</span>
                     <svg class="w-6 h-6 text-white/70 group-open:rotate-180 transition-transform" fill="none" viewbox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg></summary>
-                    <p class="text-white/70 mt-4 leading-relaxed">LoyWallet displays your loyalty card barcode exactly as it appears on your physical card. Over 99% of stores with barcode scanners can read digital barcodes from your phone screen. If a cashier is unsure, you can simply tell them your loyalty number which is also displayed on your card.</p>
+                    <p class="text-white/70 mt-4 leading-relaxed">LoyWallet affiche votre code-barres exactement comme il apparaît sur votre carte physique. Plus de 99 % des magasins équipés de lecteurs peuvent lire les codes-barres numériques sur votre écran. Si un caissier hésite, vous pouvez simplement lui donner votre numéro de fidélité qui est également affiché sur votre carte.</p>
                 </details>
                 <details class="bg-white/10 backdrop-blur border border-white/20 rounded-2xl p-6 group"><summary class="text-xl font-semibold text-white cursor-pointer list-none flex items-center justify-between"> <span>How do I add a card that won't scan?</span>
                     <svg class="w-6 h-6 text-white/70 group-open:rotate-180 transition-transform" fill="none" viewbox="0 0 24 24" stroke="currentColor">
@@ -839,26 +833,26 @@
     <section class="w-full px-6 py-20 bg-white/5 backdrop-blur-lg">
         <div class="max-w-5xl mx-auto">
             <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-5xl font-bold text-white mb-4">LoyWallet vs Physical Cards</h2>
-                <p class="text-white/70 text-lg">See why millions switched to digital</p>
+                <h2 class="text-3xl md:text-5xl font-bold text-white mb-4">LoyWallet vs Cartes Physiques</h2>
+                <p class="text-white/70 text-lg">Découvrez pourquoi des millions d'utilisateurs passent au numérique</p>
             </div>
             <div class="bg-white rounded-3xl overflow-hidden shadow-2xl">
                 <table class="w-full">
                     <thead>
                     <tr class="bg-gradient-to-r from-purple-600 to-pink-600">
-                        <th class="py-6 px-6 text-left text-white font-bold text-lg">Feature</th>
+                        <th class="py-6 px-6 text-left text-white font-bold text-lg">Fonctionnalité</th>
                         <th class="py-6 px-6 text-center text-white font-bold text-lg">LoyWallet</th>
-                        <th class="py-6 px-6 text-center text-white font-bold text-lg">Physical Cards</th>
+                        <th class="py-6 px-6 text-center text-white font-bold text-lg">Cartes Physiques</th>
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
                     <tr>
-                        <td class="py-4 px-6 font-medium text-gray-800">Store Unlimited Cards</td>
+                        <td class="py-4 px-6 font-medium text-gray-800">Cartes Illimitées</td>
                         <td class="py-4 px-6 text-center text-2xl">✅</td>
                         <td class="py-4 px-6 text-center text-2xl">❌</td>
                     </tr>
                     <tr class="bg-gray-50">
-                        <td class="py-4 px-6 font-medium text-gray-800">Never Lose Cards</td>
+                        <td class="py-4 px-6 font-medium text-gray-800">Ne Perdez Plus Vos Cartes</td>
                         <td class="py-4 px-6 text-center text-2xl">✅</td>
                         <td class="py-4 px-6 text-center text-2xl">❌</td>
                     </tr>
@@ -870,17 +864,17 @@
                     </tr>
                     -->
                     <tr>
-                        <td class="py-4 px-6 font-medium text-gray-800">Family Sharing</td>
+                        <td class="py-4 px-6 font-medium text-gray-800">Partage Familial</td>
                         <td class="py-4 px-6 text-center text-2xl">✅</td>
                         <td class="py-4 px-6 text-center text-2xl">❌</td>
                     </tr>
                     <tr class="bg-gray-50">
-                        <td class="py-4 px-6 font-medium text-gray-800">Eco-Friendly</td>
+                        <td class="py-4 px-6 font-medium text-gray-800">Éco-Responsable</td>
                         <td class="py-4 px-6 text-center text-2xl">✅</td>
                         <td class="py-4 px-6 text-center text-2xl">❌</td>
                     </tr>
                     <tr>
-                        <td class="py-4 px-6 font-medium text-gray-800">Cloud Sync</td>
+                        <td class="py-4 px-6 font-medium text-gray-800">Synchro Cloud</td>
                         <td class="py-4 px-6 text-center text-2xl">✅</td>
                         <td class="py-4 px-6 text-center text-2xl">❌</td>
                     </tr>
@@ -892,10 +886,10 @@
     <section id="contact" class="w-full px-6 py-20">
         <div class="max-w-5xl mx-auto">
             <div class="text-center mb-16">
-                <div class="inline-block bg-white/10 backdrop-blur px-4 py-2 rounded-full mb-4"><span class="text-white/90 text-sm font-medium">GET IN TOUCH</span>
+                <div class="inline-block bg-white/10 backdrop-blur px-4 py-2 rounded-full mb-4"><span class="text-white/90 text-sm font-medium">CONTACTEZ-NOUS</span>
                 </div>
-                <h2 id="contact_title" class="text-3xl md:text-5xl font-bold text-white mb-4">Contact Support</h2>
-                <p class="text-white/70 text-lg">We're here to help! Get answers to your questions or submit a support ticket.</p>
+                <h2 id="contact_title" class="text-3xl md:text-5xl font-bold text-white mb-4">Support Client</h2>
+                <p class="text-white/70 text-lg">Nous sommes là pour vous aider ! Obtenez des réponses à vos questions ou envoyez un ticket de support.</p>
             </div>
             <div class="grid md:grid-cols-1 gap-6 mb-12 max-w-md mx-auto"><!-- Help Center -->
                 <div class="glass-card rounded-3xl p-8 text-center hover:bg-white/15 transition-all">
@@ -903,30 +897,30 @@
                         <svg width="24" height="24" viewbox="2 2 20 20" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="8" /> <path d="M9.5 9.5a2.5 2.5 0 014.9 1c0 1.5-2 2-2 3" /> <circle cx="12" cy="16.5" r="0.8" fill="white" />
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-2">Help Center</h3>
-                    <p class="text-white/70 text-sm mb-4">Browse articles and guides</p><a href="#faq" class="text-white hover:text-white/80 font-medium">View FAQs</a>
+                    <h3 class="text-xl font-bold text-white mb-2">Centre d'Aide</h3>
+                    <p class="text-white/70 text-sm mb-4">Consultez nos articles et guides</p><a href="#faq" class="text-white hover:text-white/80 font-medium">Voir la FAQ</a>
                 </div>
             </div><!-- Support Ticket Form -->
             <div class="bg-white rounded-3xl p-8 md:p-12 shadow-2xl">
                 <div id="support-form-container">
-                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Submit a Support Ticket</h3>
-                    <p class="text-gray-600 mb-8">Fill out the form below and we'll get back to you as soon as possible.</p>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Envoyez un Ticket de Support</h3>
+                    <p class="text-gray-600 mb-8">Remplissez le formulaire ci-dessous et nous vous répondrons dans les plus brefs délais.</p>
                     <form id="support-form" onsubmit="submitSupportTicket(event)" class="space-y-6">
                         <div class="grid md:grid-cols-2 gap-6">
-                            <div><label for="support-name" class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label> <input type="text" id="support-name" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="John Doe">
+                            <div><label for="support-name" class="block text-sm font-medium text-gray-700 mb-2">Nom Complet *</label> <input type="text" id="support-name" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Jean Dupont">
                             </div>
-                            <div><label for="support-email" class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label> <input type="email" id="support-email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="john@example.com">
+                            <div><label for="support-email" class="block text-sm font-medium text-gray-700 mb-2">Adresse Email *</label> <input type="email" id="support-email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="jean@exemple.fr">
                             </div>
                         </div>
-                        <div><label for="support-category" class="block text-sm font-medium text-gray-700 mb-2">Category *</label> <select id="support-category" name="category" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"> <option value="">Select a category...</option> <option value="technical">Technical Issue</option> <option value="feature">Feature Request</option> <option value="bug">Bug Report</option> <option value="general">General Inquiry</option> <option value="other">Other</option> </select>
+                        <div><label for="support-category" class="block text-sm font-medium text-gray-700 mb-2">Catégorie *</label> <select id="support-category" name="category" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"> <option value="">Choisir une catégorie...</option> <option value="technical">Problème Technique</option> <option value="feature">Demande de Fonctionnalité</option> <option value="bug">Signaler un Bug</option> <option value="general">Question Générale</option> <option value="other">Autre</option> </select>
                         </div>
-                        <div><label for="support-subject" class="block text-sm font-medium text-gray-700 mb-2">Subject *</label> <input type="text" id="support-subject" name="subject" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Brief description of your issue">
+                        <div><label for="support-subject" class="block text-sm font-medium text-gray-700 mb-2">Sujet *</label> <input type="text" id="support-subject" name="subject" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Description brève de votre problème">
                         </div>
-                        <div><label for="support-message" class="block text-sm font-medium text-gray-700 mb-2">Message *</label> <textarea id="support-message" name="message" required rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none" placeholder="Please provide as much detail as possible..."></textarea>
+                        <div><label for="support-message" class="block text-sm font-medium text-gray-700 mb-2">Message *</label> <textarea id="support-message" name="message" required rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none" placeholder="Veuillez fournir autant de détails que possible..."></textarea>
                         </div><button type="submit" id="support-submit-btn" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-semibold hover:opacity-90 transition-all shadow-lg flex items-center justify-center gap-2">
                         <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
-                        </svg><span>Submit Ticket</span> </button>
-                        <p class="text-xs text-gray-500 text-center">We typically respond within 2 business days</p>
+                        </svg><span>Envoyer le Ticket</span> </button>
+                        <p class="text-xs text-gray-500 text-center">Nous répondons généralement sous 2 jours ouvrés</p>
                     </form>
                 </div><!-- Success Message -->
                 <div id="support-success-message" class="hidden text-center py-12">
@@ -934,10 +928,10 @@
                         <svg width="40" height="40" viewbox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M20 6L9 17l-5-5" />
                         </svg>
                     </div>
-                    <h4 class="text-2xl font-bold text-gray-800 mb-3">Thank You!</h4>
-                    <p class="text-gray-600 text-lg mb-2">Thank you for contacting LoyWallet support.</p>
-                    <p class="text-gray-600 mb-6">We are looking at your request and will come back to you within 2 working days.</p>
-                    <button onclick="resetSupportForm()" class="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:opacity-90 transition-all"> Submit Another Ticket </button>
+                    <h4 class="text-2xl font-bold text-gray-800 mb-3">Merci !</h4>
+                    <p class="text-gray-600 text-lg mb-2">Merci d'avoir contacté le support LoyWallet.</p>
+                    <p class="text-gray-600 mb-6">Nous étudions votre demande et vous répondrons sous 2 jours ouvrés.</p>
+                    <button onclick="resetSupportForm()" class="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:opacity-90 transition-all"> Envoyer un autre ticket </button>
                 </div>
             </div>
         </div>
@@ -945,29 +939,29 @@
     <section id="download" class="w-full px-6 py-20">
         <div class="max-w-4xl mx-auto">
             <div class="bg-white rounded-[3rem] p-8 md:p-16 text-center shadow-2xl">
-                <div class="inline-flex items-center gap-2 bg-sky-100 px-4 py-2 rounded-full mb-6"><span class="text-2xl">🚀</span> <span class="text-sky-700 font-medium">Be Among the First</span>
+                <div class="inline-flex items-center gap-2 bg-sky-100 px-4 py-2 rounded-full mb-6"><span class="text-2xl">🚀</span> <span class="text-sky-700 font-medium">Soyez parmi les premiers</span>
                 </div>
-                <h2 id="cta_text" class="text-3xl md:text-5xl font-bold text-gray-800 mb-6">Join the Waitlist for Early Access</h2>
-                <p class="text-gray-600 text-lg mb-10 max-w-2xl mx-auto">Sign up now to get exclusive early access when we launch in Q1 2026. Be the first to experience the future of digital loyalty cards.</p>
+                <h2 id="cta_text" class="text-3xl md:text-5xl font-bold text-gray-800 mb-6">Rejoignez la liste d'attente</h2>
+                <p class="text-gray-600 text-lg mb-10 max-w-2xl mx-auto">Inscrivez-vous dès maintenant pour bénéficier d'un accès anticipé exclusif lors de notre lancement au Q1 2026. Soyez les premiers à découvrir le futur des cartes de fidélité numériques.</p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center mb-10"><button onclick="showWaitlistModal()" class="group flex items-center justify-center gap-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-5 rounded-2xl hover:opacity-90 transition-all shadow-xl hover:shadow-2xl hover:scale-105 font-bold text-lg">
                     <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-                    </svg><span>Join the Waitlist</span> </button> <button onclick="showNotifyModal()" class="group flex items-center justify-center gap-3 bg-gray-100 text-gray-800 px-8 py-5 rounded-2xl hover:bg-gray-200 transition-all shadow-xl font-semibold">
+                    </svg><span>Rejoindre la liste d'attente</span> </button> <button onclick="showNotifyModal()" class="group flex items-center justify-center gap-3 bg-gray-100 text-gray-800 px-8 py-5 rounded-2xl hover:bg-gray-200 transition-all shadow-xl font-semibold">
                     <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
-                    </svg><span>Notify Me at Launch</span> </button>
+                    </svg><span>M'avertir au lancement</span> </button>
                 </div>
                 <div class="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
                     <div class="flex items-center gap-1">
                         <svg width="16" height="16" viewbox="0 0 24 24" fill="currentColor">
                             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                        </svg><span>100% Free</span>
+                        </svg><span>100% Gratuit</span>
                     </div>
-                    <div class="w-px h-4 bg-gray-300"></div><span>Launching Q1 2026</span>
-                    <div class="w-px h-4 bg-gray-300"></div><span>No Credit Card</span>
-                    <div class="w-px h-4 bg-gray-300"></div><span>Early Access</span>
+                    <div class="w-px h-4 bg-gray-300"></div><span>Lancement Q1 2026</span>
+                    <div class="w-px h-4 bg-gray-300"></div><span>Sans Carte Bancaire</span>
+                    <div class="w-px h-4 bg-gray-300"></div><span>Accès Anticipé</span>
                 </div>
                 <div class="mt-10 pt-10 border-t border-gray-200">
-                    <p class="text-gray-500 text-sm mb-4">🌟 Limited early access spots available • 🏆 Get exclusive beta perks</p>
-                    <p class="text-gray-400 text-xs">Coming soon to iPhone and Android</p>
+                    <p class="text-gray-500 text-sm mb-4">🌟 Places limitées pour l'accès anticipé • 🏆 Avantages exclusifs bêta</p>
+                    <p class="text-gray-400 text-xs">Bientôt disponible sur iPhone et Android</p>
                 </div>
             </div>
         </div>
@@ -979,27 +973,27 @@
                     <div class="flex items-center gap-2 mb-4 cursor-pointer" onclick="document.getElementById('app-wrapper').scrollTo({top: 0, behavior: 'smooth'})" title="Back to top">
                         <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white shadow-lg p-0.5">
                             <!--============================================ --> <!-- SECTION 0: Logo Start -->
-                            <img src="assets/LogoLoyWalletV1.svg" alt="LoyWallet Logo" class="w-full h-full object-contain" loading="lazy" onerror="console.error('Image failed to load:', this.src); this.style.background='linear-gradient(135deg, #7c3aed 0%, #db2777 100%)'; this.alt='LoyWallet';">
+                            <img src="../assets/LogoLoyWalletV1.svg" alt="LoyWallet Logo" class="w-full h-full object-contain" loading="lazy" onerror="console.error('Image failed to load:', this.src); this.style.background='linear-gradient(135deg, #7c3aed 0%, #db2777 100%)'; this.alt='LoyWallet';">
                             <!--============================================ --> <!-- SECTION 0: Logo End -->
                         </div><span class="text-xl font-extrabold text-white">LoyWallet</span>
                     </div>
-                    <p class="text-white/60 text-sm">The #1 digital loyalty card wallet trusted by millions worldwide.</p>
+                    <p class="text-white/60 text-sm">Le portefeuille numérique n°1 pour vos cartes de fidélité.</p>
                 </div>
                 <div>
-                    <h4 class="text-white font-semibold mb-4">Product</h4>
+                    <h4 class="text-white font-semibold mb-4">Produit</h4>
                     <ul class="space-y-2 text-white/60 text-sm">
-                        <li><a href="#features" class="hover:text-white transition-colors">Features</a></li>
-                        <li><a href="#how-it-works" class="hover:text-white transition-colors">How It Works</a></li>
-                        <li><a href="#stores" class="hover:text-white transition-colors">Supported Stores</a></li>
+                        <li><a href="#features" class="hover:text-white transition-colors">Fonctionnalités</a></li>
+                        <li><a href="#how-it-works" class="hover:text-white transition-colors">Comment ça marche</a></li>
+                        <li><a href="#stores" class="hover:text-white transition-colors">Enseignes</a></li>
                         <!-- ===
                         <li><a href="#" class="hover:text-white transition-colors">Pricing</a></li>
                         === -->
                     </ul>
                 </div>
                 <div>
-                    <h4 class="text-white font-semibold mb-4">Company</h4>
+                    <h4 class="text-white font-semibold mb-4">Société</h4>
                     <ul class="space-y-2 text-white/60 text-sm">
-                        <li><a href="about.html" class="hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="about.html" class="hover:text-white transition-colors">À Propos</a></li>
                         <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
                         <!-- ===
                         <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
@@ -1010,16 +1004,16 @@
                 <div>
                     <h4 class="text-white font-semibold mb-4">Support</h4>
                     <ul class="space-y-2 text-white/60 text-sm">
-                        <li><a href="#faq" class="hover:text-white transition-colors">Help Center</a></li>
-                        <li><a href="#contact" class="hover:text-white transition-colors">Contact Us</a></li>
-                        <li><a href="privacy.html" class="hover:text-white transition-colors">Privacy Policy</a></li>
-                        <li><a href="terms.html" class="hover:text-white transition-colors">Terms of Service</a></li>
-                        <li><a href="mentions-legales.html" class="hover:text-white transition-colors">Mentions légales</a></li>
+                        <li><a href="#faq" class="hover:text-white transition-colors">Centre d'Aide</a></li>
+                        <li><a href="#contact" class="hover:text-white transition-colors">Contact</a></li>
+                        <li><a href="privacy.html" class="hover:text-white transition-colors">Confidentialité</a></li>
+                        <li><a href="terms.html" class="hover:text-white transition-colors">Conditions d'Utilisation</a></li>
+                        <li><a href="mentions-legales.html" class="hover:text-white transition-colors">Mentions Légales</a></li>
                     </ul>
                 </div>
             </div>
             <div class="flex flex-col md:flex-row items-center justify-between gap-6 pt-8 border-t border-white/10">
-                <p class="text-white/40 text-sm">© 2026 SG Group. All rights reserved.</p>
+                <p class="text-white/40 text-sm">© 2026 SG Group. Tous droits réservés.</p>
                 <div class="flex items-center gap-4"><a href="#" class="text-white/60 hover:text-white transition-colors">
                     <svg width="20" height="20" viewbox="0 0 24 24" fill="currentColor">
                         <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
@@ -1036,7 +1030,7 @@
 </footer>
 </div>
 <!-- INCLUDE EMAILJS CONTACT SCRIPT -->
-<script src="assets/js/contact.js?v=2"></script>
+<script src="../assets/js/contact.js?v=2"></script>
 <script>
     function toggleMobileMenu() {
       const menu = document.getElementById('mobile-menu');
@@ -1094,9 +1088,9 @@
       const desc = document.getElementById('waitlist-desc');
       const btn = document.querySelector('#waitlist-form button');
       
-      if (title) title.textContent = "Join the Waitlist";
-      if (desc) desc.textContent = "Get exclusive early access when we launch in Q1 2026";
-      if (btn) btn.textContent = "Join Waitlist";
+      if (title) title.textContent = "Rejoindre la liste d'attente";
+      if (desc) desc.textContent = "Bénéficiez d'un accès anticipé exclusif lors de notre lancement au Q1 2026";
+      if (btn) btn.textContent = "Rejoindre";
 
       const modal = document.getElementById('waitlist-modal');
       if (modal) {
@@ -1119,9 +1113,9 @@
       const desc = document.getElementById('waitlist-desc');
       const btn = document.querySelector('#waitlist-form button');
 
-      if (title) title.textContent = "Get Notified";
-      if (desc) desc.textContent = "We'll send you an alert as soon as the app is live!";
-      if (btn) btn.textContent = "Notify Me";
+      if (title) title.textContent = "M'avertir au lancement";
+      if (desc) desc.textContent = "Nous vous enverrons une alerte dès que l'application sera disponible !";
+      if (btn) btn.textContent = "M'avertir";
 
       const modal = document.getElementById('waitlist-modal');
       if (modal) {
@@ -1147,12 +1141,12 @@
     }
 
     const defaultConfig = {
-      hero_title: "All Your Loyalty Cards, One Digital Wallet",
-      hero_subtitle: "Store unlimited cards, earn rewards faster, and never forget your card at checkout again. Completely free.",
-      features_title: "Everything You Need to Simplify Loyalty",
-      contact_title: "Contact Support",
-      cta_text: "Join the Waitlist for Early Access",
-      testimonials_title: "What Our Beta Testers Are Saying",
+      hero_title: "Toutes vos cartes de fidélité, un seul portefeuille numérique",
+      hero_subtitle: "Stockez un nombre illimité de cartes, gagnez des récompenses plus rapidement et n'oubliez plus jamais votre carte en caisse. Entièrement gratuit.",
+      features_title: "Tout ce dont vous avez besoin pour simplifier votre fidélité",
+      contact_title: "Support Client",
+      cta_text: "Rejoindre la liste d'attente pour un accès anticipé",
+      testimonials_title: "Ce que disent nos bêta-testeurs",
       background_color: "#1e40af",
       surface_color: "#ffffff",
       text_color: "#1f2937",
@@ -1161,19 +1155,21 @@
     };
 
     async function onConfigChange(config) {
+      const isFrenchConfig = config && config.lang === 'fr';
+      
       const heroTitle = document.getElementById('hero-title');
       const heroSubtitle = document.getElementById('hero-subtitle');
-      const featuresTitle = document.getElementById('features_title');
+      const featuresTitle = document.getElementById('features-title');
       const contactTitle = document.getElementById('contact_title');
       const ctaText = document.getElementById('cta_text');
       const testimonialsTitle = document.getElementById('testimonials_title');
-
-      if (heroTitle) heroTitle.textContent = config.hero_title || defaultConfig.hero_title;
-      if (heroSubtitle) heroSubtitle.textContent = config.hero_subtitle || defaultConfig.hero_subtitle;
-      if (featuresTitle) featuresTitle.textContent = config.features_title || defaultConfig.features_title;
-      if (contactTitle) contactTitle.textContent = config.contact_title || defaultConfig.contact_title;
-      if (ctaText) ctaText.textContent = config.cta_text || defaultConfig.cta_text;
-      if (testimonialsTitle) testimonialsTitle.textContent = config.testimonials_title || defaultConfig.testimonials_title;
+  
+      if (heroTitle) heroTitle.textContent = (isFrenchConfig && config.hero_title) || defaultConfig.hero_title;
+      if (heroSubtitle) heroSubtitle.textContent = (isFrenchConfig && config.hero_subtitle) || defaultConfig.hero_subtitle;
+      if (featuresTitle) featuresTitle.textContent = (isFrenchConfig && config.features_title) || defaultConfig.features_title;
+      if (contactTitle) contactTitle.textContent = (isFrenchConfig && config.contact_title) || defaultConfig.contact_title;
+      if (ctaText) ctaText.textContent = (isFrenchConfig && config.cta_text) || defaultConfig.cta_text;
+      if (testimonialsTitle) testimonialsTitle.textContent = (isFrenchConfig && config.testimonials_title) || defaultConfig.testimonials_title;
     }
 
     function mapToCapabilities(config) {
