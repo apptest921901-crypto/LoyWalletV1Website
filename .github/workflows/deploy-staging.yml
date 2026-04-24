@@ -1,0 +1,40 @@
+name: Deploy Staging
+on:
+  push:
+    branches:
+      - STAGING
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout STAGING
+        uses: actions/checkout@v4
+        with:
+          ref: STAGING
+          path: staging-content
+
+      - name: Checkout website-live
+        uses: actions/checkout@v4
+        with:
+          ref: website-live
+          path: main-site
+
+      - name: Deploy to staging subfolder
+        run: |
+          mkdir -p main-site/staging
+          # Clean old staging content but keep the folder
+          rm -rf main-site/staging/*
+          # Copy new content
+          cp -r staging-content/* main-site/staging/
+          # Navigate to main site folder
+          cd main-site
+          # Configure Git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Add and commit
+          git add staging/
+          # Only commit if there are changes
+          git diff --quiet && git diff --staged --quiet || git commit -m "Deploy STAGING branch to /staging/ subfolder"
+          # Push back to website-live
+          git push origin website-live
