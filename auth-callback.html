@@ -3,16 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Email Verification - LoyWallet</title>
+  <title>Authentication - LoyWallet</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       display: flex;
@@ -20,7 +15,6 @@
       align-items: center;
       padding: 20px;
     }
-    
     .container {
       background: white;
       border-radius: 20px;
@@ -30,153 +24,93 @@
       text-align: center;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     }
-    
     .logo {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 20px;
-      background: #007AFF;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 36px;
-      color: white;
-      font-weight: bold;
+      width: 80px; height: 80px; margin: 0 auto 20px; background: #007AFF; border-radius: 20px;
+      display: flex; align-items: center; justify-content: center; font-size: 36px; color: white; font-weight: bold;
     }
-    
     .spinner {
-      width: 50px;
-      height: 50px;
-      border: 4px solid #e0e0e0;
-      border-top-color: #007AFF;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 20px;
+      width: 50px; height: 50px; border: 4px solid #e0e0e0; border-top-color: #007AFF;
+      border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;
     }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    h1 {
-      color: #1a1a1a;
-      font-size: 24px;
-      margin-bottom: 12px;
-      font-weight: 700;
-    }
-    
-    p {
-      color: #666;
-      font-size: 16px;
-      line-height: 1.5;
-      margin-bottom: 24px;
-    }
-    
+    @keyframes spin { to { transform: rotate(360deg); } }
+    h1 { color: #1a1a1a; font-size: 24px; margin-bottom: 12px; font-weight: 700; }
+    p { color: #666; font-size: 16px; line-height: 1.5; margin-bottom: 24px; }
     .btn {
-      display: inline-block;
-      background: #007AFF;
-      color: white;
-      padding: 16px 32px;
-      border-radius: 12px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 16px;
-      transition: transform 0.2s, box-shadow 0.2s;
+      display: inline-block; background: #007AFF; color: white; padding: 16px 32px;
+      border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 16px;
     }
-    
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
-    }
-    
-    .success {
-      color: #34c759;
-    }
-    
-    .error {
-      color: #ff3b30;
-    }
-    
-    .hidden {
-      display: none;
-    }
-    
-    .icon {
-      font-size: 48px;
-      margin-bottom: 16px;
-    }
+    .success { color: #34c759; }
+    .error { color: #ff3b30; }
+    .hidden { display: none; }
+    .icon { font-size: 48px; margin-bottom: 16px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Loading State -->
     <div id="loading">
       <div class="logo">L</div>
       <div class="spinner"></div>
-      <h1>Verifying your email...</h1>
-      <p>Please wait while we confirm your account.</p>
+      <h1>Authenticating...</h1>
+      <p>Please wait while we process your request.</p>
     </div>
     
-    <!-- Success State -->
     <div id="success" class="hidden">
       <div class="icon success">✓</div>
-      <h1 class="success">Email Verified!</h1>
-      <p>Your account is now active. Tap below to open the LoyWallet app.</p>
-      <a href="#" class="btn" id="openApp">Open LoyWallet App</a>
+      <h1 class="success">Verification Successful!</h1>
+      <p>Your account is now active. Tap below to return to the app.</p>
+      <a href="loywalletv1://" class="btn" id="openApp">Open LoyWallet App</a>
     </div>
     
-    <!-- Error State -->
     <div id="error" class="hidden">
       <div class="icon error">✕</div>
-      <h1 class="error">Verification Failed</h1>
-      <p id="errorMessage">This verification link appears to be invalid or expired.</p>
+      <h1 class="error">Action Failed</h1>
+      <p id="errorMessage">This link appears to be invalid or expired.</p>
     </div>
   </div>
 
   <script>
-    // Parse tokens from URL hash (Supabase sends #access_token=...)
-    const hash = window.location.hash.substring(1);
-    const params = new URLSearchParams(hash);
-    const accessToken = params.get('access_token');
-    const refreshToken = params.get('refresh_token');
-    const error = params.get('error');
-    const errorDescription = params.get('error_description');
+    // 1. COMBINE SEARCH AND HASH PARAMETERS
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    
+    // Merge them (Hash takes priority for Supabase tokens)
+    const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
+    const type = hashParams.get('type') || searchParams.get('type');
+    const scheme = searchParams.get('scheme') || hashParams.get('scheme') || 'loywalletv1';
+    
+    const error = hashParams.get('error') || searchParams.get('error');
+    const errorDescription = hashParams.get('error_description') || searchParams.get('error_description');
     
     const loadingDiv = document.getElementById('loading');
     const successDiv = document.getElementById('success');
     const errorDiv = document.getElementById('error');
-    const openAppBtn = document.getElementById('openApp');
     const errorMessage = document.getElementById('errorMessage');
-    
+
     if (error) {
-      // Show error state
       loadingDiv.classList.add('hidden');
       errorDiv.classList.remove('hidden');
-      errorMessage.textContent = errorDescription || 'Something went wrong. Please try again.';
+      errorMessage.textContent = errorDescription || 'Something went wrong.';
     } else if (accessToken && refreshToken) {
-      // Success - construct deep link to app
-      const deepLink = `loywalletv1://auth/callback?access_token=${encodeURIComponent(accessToken)}&refresh_token=${encodeURIComponent(refreshToken)}`;
-      
-      // Update UI
+      // SUCCESS: WE HAVE TOKENS
       loadingDiv.classList.add('hidden');
       successDiv.classList.remove('hidden');
-      openAppBtn.href = deepLink;
       
-      // Auto-redirect after 2 seconds
-      setTimeout(() => {
-        window.location.href = deepLink;
-      }, 2000);
+      // Construct deep link with all info
+      const deepLink = `${scheme}://auth/callback?access_token=${encodeURIComponent(accessToken)}&refresh_token=${encodeURIComponent(refreshToken)}&type=${encodeURIComponent(type || '')}`;
       
-      // Also try to open app via iframe (for better mobile support)
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = deepLink;
-      document.body.appendChild(iframe);
+      console.log('🚀 Triggering Deep Link:', deepLink);
+      document.getElementById('openApp').href = deepLink;
+      
+      // Auto-redirect to App
+      window.location.href = deepLink;
+      
+      // Fallback timer
+      setTimeout(() => { window.location.href = deepLink; }, 1500);
     } else {
-      // Invalid link
       loadingDiv.classList.add('hidden');
       errorDiv.classList.remove('hidden');
+      errorMessage.textContent = "No valid authentication tokens found.";
     }
   </script>
 </body>
