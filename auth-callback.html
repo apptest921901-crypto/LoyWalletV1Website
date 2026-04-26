@@ -78,7 +78,15 @@
     const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
     const type = hashParams.get('type') || searchParams.get('type');
     const scheme = searchParams.get('scheme') || hashParams.get('scheme') || 'loywalletv1';
-    const baseUrl = searchParams.get('base') || hashParams.get('base');
+    let baseUrl = searchParams.get('base') || hashParams.get('base');
+    
+    // Fix for double-encoding: Decode until it looks like a real URL scheme
+    if (baseUrl) {
+      while (baseUrl.includes('%')) {
+        baseUrl = decodeURIComponent(baseUrl);
+      }
+      console.log('🔗 Cleaned Base URL:', baseUrl);
+    }
     
     const error = hashParams.get('error') || searchParams.get('error');
     const errorDescription = hashParams.get('error_description') || searchParams.get('error_description');
