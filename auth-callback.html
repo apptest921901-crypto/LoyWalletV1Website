@@ -97,25 +97,34 @@
       loadingDiv.classList.add('hidden');
       successDiv.classList.remove('hidden');
       
+      const isRecovery = type === 'recovery';
+      const successTitle = document.querySelector('#success h1');
+      const successSub = document.querySelector('#success p');
+      const actionBtn = document.getElementById('openApp');
+
+      if (isRecovery) {
+        successTitle.textContent = "Reset Password";
+        successTitle.style.color = "#007AFF";
+        successSub.textContent = "Security tokens captured. Opening the app to update your password...";
+        actionBtn.textContent = "Open Reset Screen";
+      }
+
       // Construct deep link with all info
       let deepLink;
       const params = `access_token=${encodeURIComponent(accessToken)}&refresh_token=${encodeURIComponent(refreshToken)}&type=${encodeURIComponent(type || '')}`;
       
       if (baseUrl) {
-        // Use the precise base URL provided by the app (Best for Expo Go)
         deepLink = baseUrl.includes('?') ? `${baseUrl}&${params}` : `${baseUrl}?${params}`;
       } else {
-        // Fallback to standard custom scheme
         deepLink = `${scheme}://auth/callback?${params}`;
       }
       
-      console.log('🚀 Triggering Deep Link:', deepLink);
-      document.getElementById('openApp').href = deepLink;
+      console.log('🚀 Deep Link:', deepLink);
+      actionBtn.href = deepLink;
       
-      // Auto-redirect to App
-      window.location.href = deepLink;
-      
-      // Fallback timer
+      // Auto-redirect to App (Multiple attempts)
+      window.location.replace(deepLink);
+      setTimeout(() => { window.location.href = deepLink; }, 500);
       setTimeout(() => { window.location.href = deepLink; }, 1500);
     } else {
       loadingDiv.classList.add('hidden');
