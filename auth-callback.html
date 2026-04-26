@@ -78,8 +78,14 @@
     const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
     const type = hashParams.get('type') || searchParams.get('type');
     const scheme = searchParams.get('scheme') || hashParams.get('scheme') || 'loywalletv1';
-    let baseUrl = searchParams.get('b') || searchParams.get('base') || hashParams.get('b') || hashParams.get('base');
+    let baseUrl = searchParams.get('h') || searchParams.get('b') || searchParams.get('base') || hashParams.get('h') || hashParams.get('b') || hashParams.get('base');
     
+    // Support for Ultra-Short host parameter
+    const host = searchParams.get('h') || hashParams.get('h');
+    if (host && !baseUrl.includes('://')) {
+      baseUrl = `exp://${host}/--/auth/callback`;
+    }
+
     // Fix for double-encoding: Decode until it looks like a real URL scheme
     if (baseUrl) {
       while (baseUrl.includes('%')) {
