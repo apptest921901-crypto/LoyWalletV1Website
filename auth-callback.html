@@ -93,6 +93,12 @@
     const scheme = searchParams.get('scheme') || hashParams.get('scheme') || 'loywalletv1';
     let baseUrl = searchParams.get('h') || searchParams.get('b') || searchParams.get('base') || hashParams.get('h') || hashParams.get('b') || hashParams.get('base');
     
+    // DEV FALLBACK: If Supabase strips our params, use your current dev IP
+    if (!baseUrl && (window.location.hostname === 'loywallet.io' || window.location.hostname === 'localhost')) {
+      console.log('🛠️ Using Dev Fallback IP');
+      baseUrl = "exp://192.168.1.14:8081/--/auth/callback";
+    }
+
     // Support for Ultra-Short host parameter
     const host = searchParams.get('h') || hashParams.get('h');
     if (host && !baseUrl.includes('://')) {
