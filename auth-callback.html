@@ -78,7 +78,7 @@
     const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
     const type = hashParams.get('type') || searchParams.get('type');
     const scheme = searchParams.get('scheme') || hashParams.get('scheme') || 'loywalletv1';
-    let baseUrl = searchParams.get('base') || hashParams.get('base');
+    let baseUrl = searchParams.get('b') || searchParams.get('base') || hashParams.get('b') || hashParams.get('base');
     
     // Fix for double-encoding: Decode until it looks like a real URL scheme
     if (baseUrl) {
@@ -86,6 +86,9 @@
         baseUrl = decodeURIComponent(baseUrl);
       }
       console.log('🔗 Cleaned Base URL:', baseUrl);
+    } else {
+      // DEV FALLBACK: If no base is found, try to guess if we're in a dev environment
+      console.warn('⚠️ No Base URL found in link.');
     }
     
     const error = hashParams.get('error') || searchParams.get('error');
