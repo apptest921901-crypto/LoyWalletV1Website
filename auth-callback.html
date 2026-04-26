@@ -78,6 +78,7 @@
     const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
     const type = hashParams.get('type') || searchParams.get('type');
     const scheme = searchParams.get('scheme') || hashParams.get('scheme') || 'loywalletv1';
+    const baseUrl = searchParams.get('base') || hashParams.get('base');
     
     const error = hashParams.get('error') || searchParams.get('error');
     const errorDescription = hashParams.get('error_description') || searchParams.get('error_description');
@@ -97,7 +98,16 @@
       successDiv.classList.remove('hidden');
       
       // Construct deep link with all info
-      const deepLink = `${scheme}://auth/callback?access_token=${encodeURIComponent(accessToken)}&refresh_token=${encodeURIComponent(refreshToken)}&type=${encodeURIComponent(type || '')}`;
+      let deepLink;
+      const params = `access_token=${encodeURIComponent(accessToken)}&refresh_token=${encodeURIComponent(refreshToken)}&type=${encodeURIComponent(type || '')}`;
+      
+      if (baseUrl) {
+        // Use the precise base URL provided by the app (Best for Expo Go)
+        deepLink = baseUrl.includes('?') ? `${baseUrl}&${params}` : `${baseUrl}?${params}`;
+      } else {
+        // Fallback to standard custom scheme
+        deepLink = `${scheme}://auth/callback?${params}`;
+      }
       
       console.log('🚀 Triggering Deep Link:', deepLink);
       document.getElementById('openApp').href = deepLink;
