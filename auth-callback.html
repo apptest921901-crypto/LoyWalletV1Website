@@ -66,9 +66,22 @@
       <h1 class="error">Action Failed</h1>
       <p id="errorMessage">This link appears to be invalid or expired.</p>
     </div>
+
+    <div id="debugInfo" class="hidden" style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 12px; font-size: 12px; text-align: left; border: 1px solid #ddd;">
+      <p style="font-weight: bold; margin-bottom: 5px; color: #666;">Debug: Deep Link</p>
+      <code id="rawLink" style="display: block; word-break: break-all; margin-bottom: 10px; color: #007AFF;"></code>
+      <button onclick="copyLink()" class="btn" style="padding: 8px 16px; font-size: 12px; background: #666;">Copy Link</button>
+      <p style="margin-top: 10px; font-size: 11px; color: #999;">If the button above doesn't work, copy this link and paste it directly into your browser's address bar.</p>
+    </div>
   </div>
 
   <script>
+    function copyLink() {
+      const link = document.getElementById('rawLink').textContent;
+      navigator.clipboard.writeText(link).then(() => {
+        alert('Link copied to clipboard!');
+      });
+    }
     // 1. COMBINE SEARCH AND HASH PARAMETERS
     const searchParams = new URLSearchParams(window.location.search);
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -139,10 +152,13 @@
       console.log('🚀 Deep Link:', deepLink);
       actionBtn.href = deepLink;
       
-      // Auto-redirect to App (Multiple attempts)
-      window.location.replace(deepLink);
+      // DEBUG: Show the link for manual testing
+      document.getElementById('rawLink').textContent = deepLink;
+      document.getElementById('debugInfo').classList.remove('hidden');
+      
+      // Auto-redirect to App (Multiple attempts with interaction simulation)
+      window.location.assign(deepLink);
       setTimeout(() => { window.location.href = deepLink; }, 500);
-      setTimeout(() => { window.location.href = deepLink; }, 1500);
     } else {
       loadingDiv.classList.add('hidden');
       errorDiv.classList.remove('hidden');
