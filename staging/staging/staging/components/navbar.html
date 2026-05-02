@@ -1,0 +1,37 @@
+<!-- ============================================ --> <!-- SECTION 1: NAVIGATION & HEADER --> <!-- Navigation -->
+<nav id="navbar" class="w-full bg-transparent border-b border-white/10 sticky top-0 z-50 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="document.getElementById('app-wrapper').scrollTo({top: 0, behavior: 'smooth'})" title="Back to top">
+                <div id="nav-logo-bg" class="w-10 h-10 rounded-xl flex items-center justify-center bg-white shadow-lg p-0.5 transition-all">
+                    <!-- ============================================ --> <!-- SECTION 0: Logo Start-->
+                    <img src="assets/LogoLoyWalletV1.svg" alt="LoyWallet Logo" class="w-full h-full object-contain" loading="lazy" onerror="console.error('Image failed to load:', this.src); this.style.background='linear-gradient(135deg, #7c3aed 0%, #db2777 100%)'; this.alt='LoyWallet';">
+                    <!-- ============================================ --> <!-- SECTION 0: Logo End -->
+                </div><span id="nav-brand" class="text-xl font-extrabold text-white transition-colors">LoyWallet</span>
+            </div>
+            <div id="nav-links" class="hidden md:flex items-center gap-8"><a href="#features" class="text-white hover:text-white transition-colors font-medium">Features</a> <a href="#how-it-works" class="text-white hover:text-white transition-colors font-medium">How It Works</a> <a href="#testimonials" class="text-white hover:text-white transition-colors font-medium">Reviews</a> <a href="about.html" class="text-white hover:text-white transition-colors font-medium">About Us</a> <a href="#faq" class="text-white hover:text-white transition-colors font-medium">FAQ</a> <a href="#contact" class="text-white hover:text-white transition-colors font-medium">Contact</a> <a href="#download" class="bg-white text-purple-600 px-6 py-2.5 rounded-full font-semibold hover:bg-white/90 transition-all shadow-lg">Join Waitlist</a>
+            </div><button id="mobile-menu-btn" class="md:hidden text-white p-2" onclick="toggleMobileMenu()">
+            <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18" />
+            </svg></button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 space-y-3"><a href="#features" class="block text-white/80 hover:text-white transition-colors font-medium py-2">Features</a> <a href="#how-it-works" class="block text-white/80 hover:text-white transition-colors font-medium py-2">How It Works</a> <a href="#testimonials" class="block text-white/80 hover:text-white transition-colors font-medium py-2">Reviews</a> <a href="about.html" class="block text-white/80 hover:text-white transition-colors font-medium py-2">About Us</a> <a href="#faq" class="block text-white/80 hover:text-white transition-colors font-medium py-2">FAQ</a> <a href="#contact" class="block text-white/80 hover:text-white transition-colors font-medium py-2">Contact</a> <a href="#download" class="block bg-white text-purple-600 px-6 py-2.5 rounded-full font-semibold text-center hover:bg-white/90 transition-all shadow-lg mt-4">Join Waitlist</a>
+        </div>
+    </div>
+</nav><!-- Trust Bar -->
+<div class="w-full bg-white/10 backdrop-blur-lg py-3">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="flex flex-wrap items-center justify-center gap-8 text-white/90 text-sm">
+            <div class="flex items-center gap-2">
+                <svg width="16" height="16" viewbox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                </svg><span class="font-semibold">Pre-Launch Beta</span>
+            </div>
+            <div class="hidden md:block w-px h-4 bg-white/30"></div>
+            <div class="flex items-center gap-2"><span class="font-semibold">500+ Supported Stores</span>
+            </div>
+            <div class="hidden md:block w-px h-4 bg-white/30"></div>
+            <div class="flex items-center gap-2"><span class="font-semibold">Launch Q1 2026</span>
+            </div>
+        </div>
+    </div>
+</div>
