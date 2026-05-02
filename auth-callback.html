@@ -12,135 +12,230 @@
       padding: 3rem 1rem;
       background-color: #f4f7f9;
       color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
     }
 
     .container {
       max-width: 400px;
-      margin: 0 auto;
+      width: 100%;
       background: #fff;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #0066ff;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.5px;
     }
 
     h1 {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
       color: #1A1A1A;
     }
 
     p {
-      line-height: 1.5;
+      line-height: 1.6;
       color: #666;
-      font-size: 0.95rem;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
     }
 
     .btn {
       display: inline-block;
-      padding: 0.8rem 1.5rem;
+      padding: 0.9rem 2rem;
       background: #0066ff;
       color: #fff;
       text-decoration: none;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
-      margin-top: 1rem;
+      transition: all 0.2s ease;
+      width: 100%;
+      font-size: 1rem;
     }
 
     .btn:hover {
       background: #0052cc;
+      transform: translateY(-1px);
     }
 
-    .secondary-text {
-      margin-top: 1.5rem;
-      font-size: 0.8rem;
-      color: #999;
+    .btn:active {
+      transform: translateY(0);
     }
 
     .spinner {
-      width: 40px;
-      height: 40px;
+      width: 48px;
+      height: 48px;
       border: 4px solid #f3f3f3;
       border-top: 4px solid #0066ff;
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin: 0 auto;
+      margin: 2rem auto;
     }
 
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    .error-box {
+      background: #fff1f0;
+      border: 1px solid #ffa39e;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+
+    .error-text {
+      color: #cf1322;
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    .debug-info {
+      margin-top: 2rem;
+      font-size: 0.75rem;
+      color: #aaa;
+      word-break: break-all;
+      text-align: left;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+      display: none;
+    }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <h1 id="status">Redirection en cours...</h1>
-    <p id="msg">
-      Nous vous redirigeons vers l'application LoyWallet pour finaliser votre connexion.
-    </p>
-
-    <div style="margin: 2rem 0;">
+    <div class="logo">LoyWallet</div>
+    
+    <div id="loading-state">
+      <h1 id="status-title">Connexion réussie !</h1>
+      <p id="status-msg">Préparation de la redirection vers l'application...</p>
+      
       <div class="spinner"></div>
+      
+      <button class="btn" id="manualBtn" onclick="redirectToApp()">Ouvrir l'application</button>
     </div>
 
-    <button class="btn" id="manualBtn" onclick="redirectToApp()">Ouvrir LoyWallet</button>
+    <div id="error-state" class="error-box">
+      <p class="error-text" id="error-msg"></p>
+    </div>
 
-    <p class="secondary-text" id="manualHint" style="display: none;">
-      Si l'application ne s'ouvre pas automatiquement, appuyez sur le bouton ci-dessus.
+    <p class="secondary-text" id="manualHint" style="margin-top: 1.5rem; font-size: 0.85rem; color: #999;">
+      Si l'application ne s'ouvre pas, cliquez sur le bouton bleu.
     </p>
+
+    <div id="debug-info" class="debug-info"></div>
   </div>
 
   <script>
+    // 1. Capture all parameters from Search and Hash
     const qs = new URLSearchParams(window.location.search);
     const hs = new URLSearchParams(window.location.hash.slice(1));
-    const allParams = new URLSearchParams([...qs.entries(), ...hs.entries()]);
+    const params = {};
+    for (const [key, value] of qs.entries()) params[key] = value;
+    for (const [key, value] of hs.entries()) params[key] = value;
 
-    let base = allParams.get('base') || allParams.get('b') || allParams.get('redirectTo');
+    const debugEl = document.getElementById('debug-info');
+    const statusTitle = document.getElementById('status-title');
+    const statusMsg = document.getElementById('status-msg');
+    const errorState = document.getElementById('error-state');
+    const errorMsg = document.getElementById('error-msg');
 
+    // 2. Handle Errors from Supabase/Google
+    const error = params.error || params.error_description;
+    if (error) {
+      statusTitle.innerText = "Oups !";
+      statusMsg.innerText = "Une erreur est survenue lors de l'authentification.";
+      errorState.style.display = 'block';
+      errorMsg.innerText = decodeURIComponent(error.replace(/\+/g, ' '));
+      document.querySelector('.spinner').style.display = 'none';
+    }
+
+    // 3. Determine Base Deep Link
+    let base = params.base || params.b || params.redirectTo;
     if (!base) {
       if (location.hostname === 'localhost' || location.hostname.includes('192.168')) {
+        // Development / LAN
         base = 'exp://192.168.1.14:8081/--/callback';
       } else {
+        // Production
         base = 'loywalletv1://callback';
       }
     }
 
-    const tokenData = new URLSearchParams({
-      access_token: allParams.get('access_token') ?? '',
-      refresh_token: allParams.get('refresh_token') ?? '',
-      type: allParams.get('type') ?? ''
-    }).toString();
+    // 4. Construct Final Deep Link with Tokens
+    const tokens = {
+      access_token: params.access_token || '',
+      refresh_token: params.refresh_token || '',
+      type: params.type || 'recovery',
+      expires_in: params.expires_in || ''
+    };
 
-    // Ensure we only have one "#" and one "callback"
-    let finalDeepLink = base.includes('#') ? base : `${base}#${tokenData}`;
-    if (!finalDeepLink.includes('access_token') && tokenData.length > 5) {
-      finalDeepLink = `${finalDeepLink}${finalDeepLink.includes('#') ? '&' : '#'}${tokenData}`;
+    const tokenQuery = new URLSearchParams(tokens).toString();
+    let finalDeepLink = base;
+
+    // Smart merge of tokens into the deep link
+    if (tokenQuery.length > 20) { // Only if we actually have tokens
+      if (finalDeepLink.includes('#')) {
+        finalDeepLink += '&' + tokenQuery;
+      } else if (finalDeepLink.includes('?')) {
+        finalDeepLink += '#' + tokenQuery;
+      } else {
+        finalDeepLink += '#' + tokenQuery;
+      }
     }
+
+    debugEl.innerText = "Target: " + finalDeepLink;
 
     function redirectToApp() {
-      // Try multiple ways to trigger the deep link
-      window.location.assign(finalDeepLink);
+      console.log("Attempting redirect to:", finalDeepLink);
+      
+      // Method 1: Location Assignment
       window.location.href = finalDeepLink;
       
-      // Fallback for some browsers: invisible click
+      // Method 2: Create a hidden link and click it (bypasses some browser restrictions)
       const a = document.createElement('a');
       a.href = finalDeepLink;
+      a.style.display = 'none';
+      document.body.appendChild(a);
       a.click();
+      
+      // Update UI to show we tried
+      statusMsg.innerText = "Redirection envoyée. Si rien ne se passe, vérifiez que l'application est installée.";
     }
 
-    // Auto-redirect multiple times to be aggressive
-    setTimeout(redirectToApp, 100);
-    setTimeout(redirectToApp, 500);
-    setTimeout(redirectToApp, 1000);
+    // 5. Automatic Redirection (Aggressive)
+    if (!error && tokenQuery.length > 20) {
+      setTimeout(redirectToApp, 100);
+      setTimeout(redirectToApp, 500);
+      setTimeout(redirectToApp, 1500);
+    } else if (!error) {
+      statusTitle.innerText = "Session expirée";
+      statusMsg.innerText = "Aucun jeton d'accès trouvé. Veuillez réessayer de vous connecter.";
+      document.querySelector('.spinner').style.display = 'none';
+    }
 
-    // Show manual hint only if it fails to redirect after 3 seconds
+    // Show debug info and manual hint if it fails after 4 seconds
     setTimeout(() => {
-      document.getElementById('manualHint').style.display = 'block';
-    }, 3000);
+      if (!error) {
+        debugEl.style.display = 'block';
+      }
+    }, 4000);
   </script>
 </body>
 
