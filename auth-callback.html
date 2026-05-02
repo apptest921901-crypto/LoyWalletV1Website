@@ -99,7 +99,7 @@
     const hs = new URLSearchParams(window.location.hash.slice(1));
     const allParams = new URLSearchParams([...qs.entries(), ...hs.entries()]);
 
-    let base = allParams.get('base') || allParams.get('b');
+    let base = allParams.get('base') || allParams.get('b') || allParams.get('redirectTo');
 
     if (!base) {
       if (location.hostname === 'localhost' || location.hostname.includes('192.168')) {
@@ -115,16 +115,29 @@
       type: allParams.get('type') ?? ''
     }).toString();
 
-    const finalDeepLink = `${base}#${tokenData}`;
-
-    function redirectToApp() {
-      window.location.href = finalDeepLink;
+    // Ensure we only have one "#" and one "callback"
+    let finalDeepLink = base.includes('#') ? base : `${base}#${tokenData}`;
+    if (!finalDeepLink.includes('access_token') && tokenData.length > 5) {
+      finalDeepLink = `${finalDeepLink}${finalDeepLink.includes('#') ? '&' : '#'}${tokenData}`;
     }
 
-    // Auto-redirect
-    setTimeout(redirectToApp, 500);
+    function redirectToApp() {
+      // Try multiple ways to trigger the deep link
+      window.location.assign(finalDeepLink);
+      window.location.href = finalDeepLink;
+      
+      // Fallback for some browsers: invisible click
+      const a = document.createElement('a');
+      a.href = finalDeepLink;
+      a.click();
+    }
 
-    // Show manual hint after 3 seconds
+    // Auto-redirect multiple times to be aggressive
+    setTimeout(redirectToApp, 100);
+    setTimeout(redirectToApp, 500);
+    setTimeout(redirectToApp, 1000);
+
+    // Show manual hint only if it fails to redirect after 3 seconds
     setTimeout(() => {
       document.getElementById('manualHint').style.display = 'block';
     }, 3000);
