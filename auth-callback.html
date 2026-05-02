@@ -3,74 +3,153 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Auth Callback</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authenticating | LoyWallet</title>
   <style>
     body {
-      font-family: system-ui, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       text-align: center;
-      padding: 2rem;
+      padding: 3rem 1rem;
+      background-color: #f4f7f9;
+      color: #333;
     }
 
-    #msg {
-      margin-top: 1rem;
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      line-height: 1.5;
+      color: #666;
+      font-size: 0.95rem;
     }
 
     #deepLink {
+      display: block;
       word-break: break-all;
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 1.5rem 0;
+      font-family: monospace;
+      font-size: 0.8rem;
       color: #0066ff;
-      margin: 1rem 0;
     }
 
-    button {
-      padding: .6rem 1.2rem;
+    .btn {
+      display: inline-block;
+      padding: 0.8rem 1.5rem;
       background: #0066ff;
       color: #fff;
+      text-decoration: none;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: #0052cc;
+    }
+
+    .secondary-text {
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      color: #999;
     }
   </style>
 </head>
 
 <body>
-  <h1 id="status">Redirecting…</h1>
-  <p id="msg">
-    If the app does not open automatically, tap “Copy Link” and paste it into the browser address bar.
-  </p>
-  <code id="deepLink"></code>
-  <button id="copyBtn" onclick="copyLink()">Copy Link</button>
+  <div class="container">
+    <h1 id="status">Redirection en cours...</h1>
+    <p id="msg">
+      Nous vous redirigeons vers l'application LoyWallet pour finaliser votre connexion.
+    </p>
+
+    <div style="margin: 2rem 0;">
+      <div class="spinner" style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #0066ff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+    </div>
+
+    <code id="deepLink" style="display: none;">Building link...</code>
+
+    <button class="btn" id="manualBtn" onclick="redirectToApp()">Ouvrir LoyWallet</button>
+
+    <p class="secondary-text" id="manualHint" style="display: none;">
+      Si l'application ne s'ouvre pas automatiquement, appuyez sur le bouton ci-dessus.
+    </p>
+  </div>
+
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 
   <script>
-    // --------- Parse everything (query + hash) ----------
+    // 1. Parse both Query Parameters (?) and Hash Fragments (#)
     const qs = new URLSearchParams(window.location.search);
     const hs = new URLSearchParams(window.location.hash.slice(1));
-    const all = new URLSearchParams([...qs.entries(), ...hs.entries()]);
 
-    // --------- Get the base deep‑link supplied by the app ----------
-    // The app sends it as a fragment: #base=exp%3A%2F%2F192.168.1.14%3A8081%2F--%2Fauth%2Fcallback
-    let base = qs.get('base') || hs.get('base') || qs.get('b') || hs.get('b');
+    // Combine them so we catch tokens regardless of where they are
+    const allParams = new URLSearchParams([...qs.entries(), ...hs.entries()]);
 
-    // --------- Development fallback (in case the param disappears) ----------
-    if (!base && (location.hostname === 'loywallet.io' || location.hostname === 'localhost')) {
-      console.log('🛠️ Using dev fallback URL');
-      base = 'exp://192.168.1.14:8081/--/auth/callback';
+    // 2. Identify the Base URL (Where the app is listening)
+    let base = allParams.get('base') || allParams.get('b');
+
+    // 3. Development Fallback
+    // If no base is provided (standard email click), use your local dev IP or production scheme
+    if (!base) {
+      if (location.hostname === 'localhost' || location.hostname.includes('192.168')) {
+        base = 'exp://192.168.1.14:8081/--/auth/callback';
+      } else {
+        base = 'loywalletv1://auth/callback';
+      }
     }
 
-    // --------- Build the final deep‑link with Supabase tokens ----------
-    const params = new URLSearchParams({
-      access_token: all.get('access_token') ?? '',
-      refresh_token: all.get('refresh_token') ?? '',
-      type: all.get('type') ?? ''
+    // 4. Build the final Deep Link
+    // We use "#" because callback.tsx is looking for .split('#')
+    const tokenData = new URLSearchParams({
+      access_token: allParams.get('access_token') ?? '',
+      refresh_token: allParams.get('refresh_token') ?? '',
+      type: allParams.get('type') ?? ''
     }).toString();
 
-    const deepLink = `${base}?${params}`;
+    const finalDeepLink = `${base}#${tokenData}`;
 
-    // --------- UI & auto‑redirect ----------
-    document.getElementById('deepLink').textContent = deepLink;
-    setTimeout(() => { window.location.href = deepLink; }, 500);
+    // 5. Update UI
+    const linkElement = document.getElementById('deepLink');
+    linkElement.textContent = finalDeepLink;
 
-    // --------- Manual copy helper ----------
+    // 6. Execution: Auto-redirect after a short delay
+    function redirectToApp() {
+      window.location.href = finalDeepLink;
+    }
+
+    setTimeout(redirectToApp, 500);
+
+    // Show manual hint if it takes too long
+    setTimeout(() => {
+      document.getElementById('manualHint').style.display = 'block';
+    }, 3000);
+
+    // Manual helper
     function copyLink() {
-      navigator.clipboard.writeText(deepLink).then(() => alert('Link copied!'));
+      navigator.clipboard.writeText(finalDeepLink).then(() => {
+        alert('Lien copié !');
+      });
     }
   </script>
 </body>
