@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>À Propos - LoyWallet</title>
+    <meta name="description" content="Découvrez la mission de LoyWallet : simplifier vos programmes de fidélité. Nous bâtissons le futur des cartes de fidélité numériques.">
+    <link rel="canonical" href="https://loywallet.io/about.html">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e40af 0%, #7c3aed 50%, #db2777 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+    </style>
+</head>
+<body class="h-full">
+<div id="app-wrapper" class="w-full h-full overflow-auto gradient-bg">
+    <!-- Navigation -->
+    <nav id="navbar" class="w-full bg-transparent border-b border-white/10 sticky top-0 z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2 cursor-pointer" onclick="document.getElementById('app-wrapper').scrollTo({top: 0, behavior: 'smooth'})" title="Back to top">
+                    <div id="nav-logo-bg" class="w-10 h-10 rounded-xl flex items-center justify-center bg-white shadow-lg p-0.5 transition-all">
+                        <img src="../assets/LogoLoyWalletV1.svg" alt="LoyWallet Logo" class="w-full h-full object-contain" loading="lazy" onerror="console.error('Image failed to load:', this.src); this.style.background='linear-gradient(135deg, #7c3aed 0%, #db2777 100%)'; this.alt='LoyWallet';">
+                    </div><span id="nav-brand" class="text-xl font-extrabold text-white transition-colors">LoyWallet</span>
+                </div>
+                <div id="nav-links" class="hidden md:flex items-center gap-8">
+                    <a href="index.html" class="text-white hover:text-white transition-colors font-medium">Accueil</a>
+                    <a href="index.html#features" class="text-white hover:text-white transition-colors font-medium">Fonctionnalités</a>
+                    <a href="index.html#how-it-works" class="text-white hover:text-white transition-colors font-medium">Comment ça marche</a>
+                    <a href="about.html" class="text-white hover:text-white transition-colors font-medium">À Propos</a>
+                    <a href="index.html#contact" class="text-white hover:text-white transition-colors font-medium">Contact</a>
+                    <a href="index.html#download" class="bg-white text-purple-600 px-6 py-2.5 rounded-full font-semibold hover:bg-white/90 transition-all shadow-lg">Rejoindre</a>
+                    <a href="../about.html" class="text-white/70 hover:text-white transition-colors font-bold border border-white/20 px-3 py-1 rounded-lg text-sm">EN</a>
+                </div>
+                <button id="mobile-menu-btn" class="md:hidden text-white p-2" onclick="toggleMobileMenu()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12h18M3 6h18M3 18h18"/>
+                    </svg>
+                </button>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 space-y-3">
+                <a href="index.html" class="block text-white/80 hover:text-white transition-colors font-medium py-2">Accueil</a>
+                <a href="index.html#features" class="block text-white/80 hover:text-white transition-colors font-medium py-2">Fonctionnalités</a>
+                <a href="index.html#how-it-works" class="block text-white/80 hover:text-white transition-colors font-medium py-2">Comment ça marche</a>
+                <a href="about.html" class="block text-white/80 hover:text-white transition-colors font-medium py-2">À propos</a>
+                <a href="index.html#contact" class="block text-white/80 hover:text-white transition-colors font-medium py-2">Contact</a>
+                <a href="index.html#download" class="block bg-white text-purple-600 px-6 py-2.5 rounded-full font-semibold text-center hover:bg-white/90 transition-all shadow-lg mt-4">Rejoindre</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- About Us Section -->
+    <section class="w-full px-6 py-20">
+        <div class="max-w-4xl mx-auto">
+            <!-- Hero Text -->
+            <div class="text-center mb-16">
+                <p class="text-blue-400 text-sm font-bold uppercase mb-2" style="letter-spacing: 0.15rem;">À PROPOS</p>
+                <h1 class="text-3xl md:text-5xl font-extrabold text-white leading-tight mb-6">
+                    Simplifier les récompenses,<br>enfin.
+                </h1>
+            </div>
+
+            <!-- Main Content -->
+            <div class="glass-card rounded-3xl p-8 md:p-12 mb-12">
+                <p class="text-white/90 text-lg leading-relaxed mb-8">
+                    Chez LoyWallet, nous pensons que la fidélité ne devrait pas être une corvée. Nous l'avons tous vécu : attendre à la caisse, fouiller dans un portefeuille physique ou chercher parmi des dizaines d'applications différentes alors que la file d'attente s'allonge derrière nous.
+                </p>
+            </div>
+
+            <!-- Mission Section -->
+            <div class="grid md:grid-cols-2 gap-8 mb-12">
+                <div class="glass-card rounded-3xl p-8">
+                    <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-6">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.18L12 21.35z"/>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-4">Notre Mission</h2>
+                    <p class="text-white/80 leading-relaxed">
+                        Nous avons créé LoyWallet pour simplifier votre quotidien. Notre objectif est de fournir un foyer numérique unique, sécurisé et ultra-rapide pour chaque carte de fidélité que vous possédez. Fini les points oubliés, la fatigue des cartes en plastique et les économies manquées.
+                    </p>
+                </div>
+
+                <div class="glass-card rounded-3xl p-8">
+                    <div class="w-14 h-14 bg-gradient-to-br from-pink-500 to-purple-500 rounded-2xl flex items-center justify-center mb-6">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-4">Conçu pour le Shopper Moderne</h2>
+                    <p class="text-white/80 leading-relaxed">
+                        Basé sur les dernières technologies mobiles et le scan assisté par IA, LoyWallet est conçu pour être la seule application de récompenses dont vous aurez besoin. Nous sommes une équipe de développeurs et de designers obsédés par une chose : créer un pont fluide entre vos marques préférées et votre portefeuille numérique.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Launch CTA -->
+            <div class="text-center">
+                <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur px-6 py-3 rounded-full mb-6">
+                    <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                    <span class="text-white/90 text-sm font-medium">Lancement Q1 2026</span>
+                </div>
+                <p class="text-white/70 text-lg mb-8">Nous ne faisons que commencer.</p>
+                <a href="index.html#download" class="inline-flex items-center gap-3 bg-white text-purple-600 px-8 py-4 rounded-2xl hover:bg-gray-100 transition-all shadow-xl hover:shadow-2xl hover:scale-105 font-bold text-lg">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                    </svg>
+                    <span>Rejoindre la liste d'attente</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="w-full px-6 py-12 border-t border-white/10">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center gap-2 mb-4 cursor-pointer" onclick="document.getElementById('app-wrapper').scrollTo({top: 0, behavior: 'smooth'})" title="Back to top">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-white shadow-lg p-0.5">
+                            <img src="../assets/LogoLoyWalletV1.svg" alt="LoyWallet Logo" class="w-full h-full object-contain" loading="lazy" onerror="console.error('Image failed to load:', this.src); this.style.background='linear-gradient(135deg, #7c3aed 0%, #db2777 100%)'; this.alt='LoyWallet';">
+                        </div><span class="text-xl font-extrabold text-white">LoyWallet</span>
+                    </div>
+                    <p class="text-white/60 text-sm">Le portefeuille numérique n°1 pour vos cartes de fidélité.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Produit</h4>
+                    <ul class="space-y-2 text-white/60 text-sm">
+                        <li><a href="index.html#features" class="hover:text-white transition-colors">Fonctionnalités</a></li>
+                        <li><a href="index.html#how-it-works" class="hover:text-white transition-colors">Comment ça marche</a></li>
+                        <li><a href="index.html#stores" class="hover:text-white transition-colors">Enseignes</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Société</h4>
+                    <ul class="space-y-2 text-white/60 text-sm">
+                        <li><a href="about.html" class="hover:text-white transition-colors">À Propos</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Support</h4>
+                    <ul class="space-y-2 text-white/60 text-sm">
+                        <li><a href="index.html#faq" class="hover:text-white transition-colors">Centre d'Aide</a></li>
+                        <li><a href="index.html#contact" class="hover:text-white transition-colors">Contact</a></li>
+                        <li><a href="privacy.html" class="hover:text-white transition-colors">Confidentialité</a></li>
+                        <li><a href="terms.html" class="hover:text-white transition-colors">Conditions d'Utilisation</a></li>
+                        <li><a href="mentions-legales.html" class="hover:text-white transition-colors">Mentions Légales</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6 pt-8 border-t border-white/10">
+                <p class="text-white/40 text-sm">© 2026 SG Group. Tous droits réservés.</p>
+                <div class="flex items-center gap-4">
+                    <a href="#" class="text-white/60 hover:text-white transition-colors">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="text-white/60 hover:text-white transition-colors">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="text-white/60 hover:text-white transition-colors">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script>
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobile-menu');
+        if (menu) {
+            menu.classList.toggle('hidden');
+        }
+    }
+
+    // Scroll effect for Navbar
+    document.getElementById('app-wrapper').addEventListener('scroll', function() {
+        const navbar = document.getElementById('navbar');
+        const brand = document.getElementById('nav-brand');
+        const links = document.querySelectorAll('#nav-links a:not([href="#download"])');
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        const logoBg = document.getElementById('nav-logo-bg');
+        const scrollY = this.scrollTop;
+
+        if (scrollY > 50) {
+            navbar.classList.add('bg-white', 'shadow-md', 'py-2');
+            navbar.classList.remove('bg-transparent', 'py-4', 'border-white/10');
+            brand.classList.add('text-gray-900');
+            brand.classList.remove('text-white');
+            mobileBtn.classList.add('text-gray-900');
+            mobileBtn.classList.remove('text-white');
+            logoBg.classList.remove('bg-white');
+            logoBg.classList.add('bg-purple-100');
+            
+            links.forEach(link => {
+                link.classList.add('text-gray-600', 'hover:text-purple-600');
+                link.classList.remove('text-white', 'hover:text-white');
+            });
+        } else {
+            navbar.classList.remove('bg-white', 'shadow-md', 'py-2');
+            navbar.classList.add('bg-transparent', 'py-4', 'border-white/10');
+            brand.classList.remove('text-gray-900');
+            brand.classList.add('text-white');
+            mobileBtn.classList.remove('text-gray-900');
+            mobileBtn.classList.add('text-white');
+            logoBg.classList.add('bg-white');
+            logoBg.classList.remove('bg-purple-100');
+
+            links.forEach(link => {
+                link.classList.remove('text-gray-600', 'hover:text-purple-600');
+                link.classList.add('text-white', 'hover:text-white');
+            });
+        }
+    });
+</script>
+</body>
+</html>
