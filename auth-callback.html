@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
+<!-- LoyWallet Auth Callback v1.1.8 -->
 
 <head>
-  <title>LoyWallet Auth Callback v1.1.7</title>
+  <title>Redirecting to LoyWallet...</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
@@ -59,16 +60,14 @@
     <div id="status-icon" class="loader"></div>
     <h2 id="status-text">Finalizing login...</h2>
     <p id="sub-text">Redirecting you back to the LoyWallet app.</p>
-    <a id="manual-link" class="button">Open LoyWallet</a>
+    <a id="manual-link" class="button">Open LoyWallet App</a>
   </div>
 
   <script>
     (function () {
       try {
-        // 1. Capture tokens from the hash (#) and errors from the search (?)
         const hash = window.location.hash;
         const search = window.location.search;
-
         const appScheme = "loywalletv1://callback";
 
         if (!hash && !search) {
@@ -80,21 +79,28 @@
 
         const targetUrl = appScheme + search + hash;
 
-        // Aggressive multi-stage redirect
+        // 1. Immediate redirect attempt using replace
         window.location.replace(targetUrl);
-        window.location.href = targetUrl;
-        setTimeout(() => { window.location.replace(targetUrl); }, 100);
 
+        // 2. Secondary redirect attempt for browsers that ignore immediate replace
         setTimeout(function () {
-          document.getElementById('status-icon').style.display = 'none';
+          window.location.href = targetUrl;
+        }, 100);
+
+        // 3. Fallback UI if auto-redirect fails (usually due to browser security)
+        setTimeout(function () {
+          const icon = document.getElementById('status-icon');
+          if (icon) icon.style.display = 'none';
+
           document.getElementById('status-text').innerText = "Action Required";
-          document.getElementById('sub-text').innerHTML = "We're trying to open the LoyWallet app.<br><small>If you are using Expo Go, ensure your scheme is correct.</small>";
+          document.getElementById('sub-text').innerHTML = "We're trying to open the LoyWallet app.<br><small>If nothing happens, tap the button below.</small>";
 
           const btn = document.getElementById('manual-link');
-          btn.style.display = 'inline-block';
-          btn.href = targetUrl;
-          btn.innerText = "Open LoyWallet App";
-        }, 2000);
+          if (btn) {
+            btn.style.display = 'inline-block';
+            btn.href = targetUrl;
+          }
+        }, 2500);
       } catch (err) {
         console.error("Redirect logic failed:", err);
         document.getElementById('status-text').innerText = "An error occurred during redirection.";
