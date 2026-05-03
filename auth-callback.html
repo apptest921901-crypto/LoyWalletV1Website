@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fr">
-<!-- LoyWallet Auth Callback v1.2.4 -->
 
 <head>
   <meta charset="UTF-8">
@@ -8,7 +7,7 @@
   <title>Authentification | LoyWallet</title>
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       text-align: center;
       padding: 3rem 1rem;
       background-color: #f4f7f9;
@@ -72,7 +71,7 @@
     </div>
     <div id="status-area">
       <h1>Connexion réussie !</h1>
-      <p>Préparation de la redirection vers l'application...</p>
+      <p>Redirection vers l'application en cours...</p>
       <div class="spinner"></div>
       <button class="btn" onclick="redirectToApp()">Ouvrir l'application</button>
     </div>
@@ -86,12 +85,13 @@
       return {
         accessToken: params.get('access_token'),
         refreshToken: params.get('refresh_token'),
-        error: params.get('error') || params.get('error_description')
+        error: params.get('error_description') || params.get('error'),
+        redirectTo: params.get('redirectTo')
       };
     }
 
     function redirectToApp() {
-      const { accessToken, refreshToken, error } = getOAuthParams();
+      const { accessToken, refreshToken, error, redirectTo } = getOAuthParams();
       const statusEl = document.getElementById('status-area');
 
       if (error) {
@@ -100,34 +100,31 @@
       }
 
       if (!accessToken) {
-        statusEl.innerHTML = `<h1>Session expirée</h1><p>Aucun jeton trouvé. Veuillez relancer la connexion.</p>`;
+        statusEl.innerHTML = `<h1>Session expirée</h1><p>Veuillez relancer la connexion.</p>`;
         return;
       }
 
-      // Target scheme matching AuthContext.tsx
-      let targetBase = 'loywalletv1://callback';
+      // Determine target: Prefer 'redirectTo' param, fallback to production scheme
+      let targetBase = redirectTo ? decodeURIComponent(redirectTo) : 'loywalletv1://callback';
 
-      // Support for Local Dev environment
-      if (location.hostname === 'localhost' || location.hostname.includes('192.168')) {
+      // Support local dev automatically if hosted on a local IP
+      if (location.hostname.includes('192.168') || location.hostname === 'localhost') {
         targetBase = 'exp://192.168.1.14:8081/--/callback';
       }
 
-      const finalDeepLink = `${targetBase}?access_token=${accessToken}&refresh_token=${refreshToken}`;
+      const finalDeepLink = `${targetBase}${targetBase.includes('?') ? '&' : '?'}access_token=${accessToken}&refresh_token=${refreshToken}`;
 
-      // Primary redirection
       window.location.href = finalDeepLink;
 
-      // Backup for browsers that block automatic URL scheme triggers
+      // Backup for browsers with strict redirect policies
       setTimeout(() => {
         const link = document.createElement('a');
         link.href = finalDeepLink;
         link.click();
-      }, 500);
+      }, 600);
     }
 
-    if (getOAuthParams().accessToken) {
-      setTimeout(redirectToApp, 300);
-    }
+    if (getOAuthParams().accessToken) setTimeout(redirectToApp, 300);
   </script>
 </body>
 
