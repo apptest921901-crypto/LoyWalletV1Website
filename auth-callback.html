@@ -1,114 +1,112 @@
 <!DOCTYPE html>
 <html>
-<!-- LoyWallet Auth Callback v1.1.9 -->
+<!-- LoyWallet Auth Callback v1.2.1 -->
 
 <head>
-    <title>LoyWallet Login</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            font-family: -apple-system, system-ui, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: #F8F9FB;
-            color: #1A1A1A;
-        }
+  <title>Authenticating LoyWallet...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: -apple-system, system-ui, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #F8F9FB;
+      color: #1A1A1A;
+    }
 
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #007AFF;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #007AFF;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
 
-            100% {
-                transform: rotate(360deg);
-            }
-        }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
 
-        .content {
-            text-align: center;
-            padding: 20px;
-        }
+    .content {
+      text-align: center;
+      padding: 20px;
+    }
 
-        .button {
-            display: none;
-            margin-top: 20px;
-            padding: 12px 24px;
-            background: #007AFF;
-            color: white;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: bold;
-        }
-    </style>
+    .button {
+      display: none;
+      margin-top: 20px;
+      padding: 12px 24px;
+      background: #007AFF;
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 
 <body>
-    <div class="content">
-        <div id="status-icon" class="loader"></div>
-        <h2 id="status-text">Finalizing login...</h2>
-        <p id="sub-text">Redirecting you back to the LoyWallet app.</p>
-        <a id="manual-link" class="button">Open LoyWallet</a>
-    </div>
+  <div class="content">
+    <div id="status-icon" class="loader"></div>
+    <h2 id="status-text">Finalizing login...</h2>
+    <p id="sub-text">Redirecting you back to the LoyWallet app.</p>
+    <a id="manual-link" class="button">Open LoyWallet App</a>
+  </div>
 
-    <script>
-        (function () {
-            try {
-                // 1. Capture tokens from the hash (#) and errors from the search (?)
-                const hash = window.location.hash;
-                const search = window.location.search;
+  <script>
+    (function () {
+      try {
+        const hash = window.location.hash;
+        const search = window.location.search;
+        const appScheme = "loywalletv1://callback";
 
-                // 2. Your app's scheme defined in app.json
-                const appScheme = "loywalletv1://callback";
+        if (!hash && !search) {
+          document.getElementById('status-icon').style.display = 'none';
+          document.getElementById('status-text').innerText = "Session expired or invalid";
+          document.getElementById('sub-text').innerText = "Please try logging in again from the app.";
+          return;
+        }
 
-                // Check if we actually have something to redirect (tokens or errors)
-                if (!hash && !search) {
-                    document.getElementById('status-icon').style.display = 'none';
-                    document.getElementById('status-text').innerText = "Session expired or invalid";
-                    document.getElementById('sub-text').innerText = "Please try logging in again from the app.";
-                    return;
-                }
+        const targetUrl = appScheme + search + hash;
 
-                // 3. Construct the deep link
-                // We pass everything through so AuthContext.tsx can parse it
-                const targetUrl = appScheme + search + hash;
+        // 1. Immediate redirect attempt using replace
+        window.location.replace(targetUrl);
 
-                // Aggressive Redirect Strategy
-                window.location.replace(targetUrl);
-                
-                // Secondary redirect for browsers that block .replace
-                setTimeout(() => {
-                    window.location.href = targetUrl;
-                }, 250);
+        // 2. Secondary redirect attempt for browsers that ignore immediate replace
+        setTimeout(function () {
+          window.location.href = targetUrl;
+        }, 100);
 
-                // Fallback UI if auto-redirect fails (usually requires user tap)
-                setTimeout(function () {
-                    document.getElementById('status-icon').style.display = 'none';
-                    document.getElementById('status-text').innerText = "Action Required";
-                    document.getElementById('sub-text').innerHTML = "We're trying to open the app.<br><small>If nothing happens, tap below.</small>";
-                    const btn = document.getElementById('manual-link');
-                    btn.style.display = 'inline-block';
-                    btn.href = targetUrl;
-                    btn.innerText = "Open LoyWallet App";
-                }, 2000);
-            } catch (err) {
-                console.error("Redirect logic failed:", err);
-                document.getElementById('status-text').innerText = "An error occurred during redirection.";
-            }
-        })();
-    </script>
+        // 3. Fallback UI if auto-redirect fails (usually due to browser security)
+        setTimeout(function () {
+          const icon = document.getElementById('status-icon');
+          if (icon) icon.style.display = 'none';
+
+          document.getElementById('status-text').innerText = "Action Required";
+          document.getElementById('sub-text').innerHTML = "We're trying to open the LoyWallet app.<br><small>If nothing happens, tap the button below.</small>";
+
+          const btn = document.getElementById('manual-link');
+          if (btn) {
+            btn.style.display = 'inline-block';
+            btn.href = targetUrl;
+          }
+        }, 2500);
+      } catch (err) {
+        console.error("Redirect logic failed:", err);
+        document.getElementById('status-text').innerText = "An error occurred during redirection.";
+      }
+    })();
+  </script>
 </body>
 
 </html>
