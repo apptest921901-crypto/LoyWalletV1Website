@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>LoyWallet Auth Callback v1.1.3</title>
+    <title>LoyWallet Auth Callback v1.1.6</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body {
@@ -70,7 +70,7 @@
                 const search = window.location.search;
 
                 const appScheme = "loywalletv1://callback";
-                
+
                 if (!hash && !search) {
                     document.getElementById('status-icon').style.display = 'none';
                     document.getElementById('status-text').innerText = "Session expired or invalid";
@@ -80,15 +80,16 @@
 
                 const targetUrl = appScheme + search + hash;
 
+                // Aggressive multi-stage redirect
+                window.location.replace(targetUrl);
                 window.location.href = targetUrl;
-                
                 setTimeout(() => { window.location.replace(targetUrl); }, 100);
 
                 setTimeout(function () {
                     document.getElementById('status-icon').style.display = 'none';
                     document.getElementById('status-text').innerText = "Action Required";
                     document.getElementById('sub-text').innerHTML = "We're trying to open the LoyWallet app.<br><small>If you are using Expo Go, ensure your scheme is correct.</small>";
-                    
+
                     const btn = document.getElementById('manual-link');
                     btn.style.display = 'inline-block';
                     btn.href = targetUrl;
