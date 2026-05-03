@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<!-- LoyWallet Auth Callback v1.2.1 -->
+<!-- LoyWallet Auth Callback v1.2.2 -->
 
 <head>
   <title>Authenticating LoyWallet...</title>
@@ -60,16 +60,20 @@
     <div id="status-icon" class="loader"></div>
     <h2 id="status-text">Finalizing login...</h2>
     <p id="sub-text">Redirecting you back to the LoyWallet app.</p>
-    <a id="manual-link" class="button">Open LoyWallet App</a>
+    <a id="manual-link" class="button">Open LoyWallet</a>
   </div>
 
   <script>
     (function () {
       try {
+        // 1. Capture tokens from the hash (#) and errors from the search (?)
         const hash = window.location.hash;
         const search = window.location.search;
+
+        // 2. Your app's scheme defined in app.json
         const appScheme = "loywalletv1://callback";
 
+        // Check if we actually have something to redirect (tokens or errors)
         if (!hash && !search) {
           document.getElementById('status-icon').style.display = 'none';
           document.getElementById('status-text').innerText = "Session expired or invalid";
@@ -77,30 +81,32 @@
           return;
         }
 
+        // 3. Construct the deep link
+        // We pass everything through so AuthContext.tsx can parse it
         const targetUrl = appScheme + search + hash;
 
-        // 1. Immediate redirect attempt using replace
-        window.location.replace(targetUrl);
-
-        // 2. Secondary redirect attempt for browsers that ignore immediate replace
-        setTimeout(function () {
+        // Aggressive Redirect Strategy (v1.2.2)
+        const performRedirect = () => {
+          window.location.replace(targetUrl);
           window.location.href = targetUrl;
-        }, 100);
+        };
 
-        // 3. Fallback UI if auto-redirect fails (usually due to browser security)
+        performRedirect();
+
+        // Multiple attempts to bypass mobile browser security restrictions
+        setTimeout(performRedirect, 100);
+        setTimeout(performRedirect, 500);
+        setTimeout(performRedirect, 1500);
+
         setTimeout(function () {
-          const icon = document.getElementById('status-icon');
-          if (icon) icon.style.display = 'none';
-
+          document.getElementById('status-icon').style.display = 'none';
           document.getElementById('status-text').innerText = "Action Required";
-          document.getElementById('sub-text').innerHTML = "We're trying to open the LoyWallet app.<br><small>If nothing happens, tap the button below.</small>";
-
+          document.getElementById('sub-text').innerHTML = "We're trying to open the app.<br><small>If nothing happens, tap below.</small>";
           const btn = document.getElementById('manual-link');
-          if (btn) {
-            btn.style.display = 'inline-block';
-            btn.href = targetUrl;
-          }
-        }, 2500);
+          btn.style.display = 'inline-block';
+          btn.href = targetUrl;
+          btn.innerText = "Open LoyWallet App";
+        }, 2000);
       } catch (err) {
         console.error("Redirect logic failed:", err);
         document.getElementById('status-text').innerText = "An error occurred during redirection.";
