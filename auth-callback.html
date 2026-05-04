@@ -1,130 +1,31 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 
 <head>
-  <meta charset="UTF-8">
+  <title>Authenticating...</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Authentification | LoyWallet</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      text-align: center;
-      padding: 3rem 1rem;
-      background-color: #f4f7f9;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-
-    .container {
-      max-width: 400px;
-      width: 100%;
-      background: #fff;
-      padding: 2.5rem;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-    }
-
-    .spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #0066ff;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 2rem auto;
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 0.9rem 2rem;
-      background: #0066ff;
-      color: #fff;
-      text-decoration: none;
-      border: none;
-      border-radius: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-      font-size: 1rem;
-    }
-  </style>
 </head>
 
 <body>
-  <div class="container">
-    <div class="logo" style="font-size: 1.8rem; font-weight: 800; color: #0066ff; margin-bottom: 1.5rem;">LoyWallet
-    </div>
-    <div id="status-area">
-      <h1>Connexion réussie !</h1>
-      <p>Redirection vers l'application en cours...</p>
-      <div class="spinner"></div>
-      <button class="btn" onclick="redirectToApp()">Ouvrir l'application</button>
-    </div>
+  <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;">
+    <p>Redirecting back to LoyWallet...</p>
   </div>
-
   <script>
-    function getOAuthParams() {
-      const hash = window.location.hash.substring(1);
-      const search = window.location.search.substring(1);
-      const params = new URLSearchParams(hash || search);
-      return {
-        accessToken: params.get('access_token'),
-        refreshToken: params.get('refresh_token'),
-        error: params.get('error_description') || params.get('error'),
-        redirectTo: params.get('redirectTo')
-      };
+    // 1. Get the tokens from the hash fragment (#)
+    const hash = window.location.hash;
+
+    // 2. Extract the 'redirectTo' target passed from the app
+    const urlParams = new URLSearchParams(window.location.search);
+    const appTarget = urlParams.get('redirectTo') || 'loywalletv1://callback';
+
+    // 3. Reconstruct the deep link - Only append hash if it exists
+    let finalRedirect = appTarget;
+    if (hash) {
+      finalRedirect += (appTarget.includes('#') ? '&' : '#') + hash.substring(1);
     }
 
-    function redirectToApp() {
-      const { accessToken, refreshToken, error, redirectTo } = getOAuthParams();
-      const statusEl = document.getElementById('status-area');
-
-      if (error) {
-        statusEl.innerHTML = `<h1 style="color:#cf1322">Erreur</h1><p>${decodeURIComponent(error.replace(/\+/g, ' '))}</p>`;
-        return;
-      }
-
-      if (!accessToken) {
-        statusEl.innerHTML = `<h1>Session expirée</h1><p>Veuillez relancer la connexion.</p>`;
-        return;
-      }
-
-      // Determine target: Prefer 'redirectTo' param, fallback to production scheme
-      let targetBase = redirectTo ? decodeURIComponent(redirectTo) : 'loywalletv1://callback';
-
-      // Support local dev automatically if hosted on a local IP
-      if (location.hostname.includes('192.168') || location.hostname === 'localhost') {
-        targetBase = 'exp://192.168.1.14:8081/--/callback';
-      }
-
-      const finalDeepLink = `${targetBase}${targetBase.includes('?') ? '&' : '?'}access_token=${accessToken}&refresh_token=${refreshToken}`;
-
-      window.location.href = finalDeepLink;
-
-      // Backup for browsers with strict redirect policies
-      setTimeout(() => {
-        const link = document.createElement('a');
-        link.href = finalDeepLink;
-        link.click();
-      }, 600);
-    }
-
-    if (getOAuthParams().accessToken) setTimeout(redirectToApp, 300);
+    // 4. Perform the jump
+    window.location.replace(finalRedirect);
   </script>
 </body>
 
